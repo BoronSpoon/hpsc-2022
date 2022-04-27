@@ -1,27 +1,41 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <immintrin.h>
+
+float reduce_sum(__m256 avec) {
+  __m256 bvec = _mm256_permute2f128_ps(avec,avec,1);
+  bvec = _mm256_add_ps(bvec,avec);
+  bvec = _mm256_hadd_ps(bvec,bvec);
+  bvec = _mm256_hadd_ps(bvec,bvec);
+  _mm256_store_ps(a, bvec);
+  return a[0];
+}
 
 int main() {
   const int N = 8;
-  float x[N], y[N], m[N], fx[N], fy[N];
+  float x[N], y[N], m[N], fx[N], fy[N], range[N];
   for(int i=0; i<N; i++) {
     x[i] = drand48();
     y[i] = drand48();
     m[i] = drand48();
     fx[i] = fy[i] = 0;
+    range[i] = i;
   }
-  __mm256 xvec = _mm256_load_ps(x);
-  __mm256 yvec = _mm256_load_ps(y);
+  __m256 xvec = _mm256_load_ps(x);
+  __m256 yvec = _mm256_load_ps(y);
+  __m256 mvec = _mm256_load_ps(m);
+  __m256 rangevec = _mm256_load_ps(range)
+  __m256 zerovec = _mm_setzero_ps();
   for(int i=0; i<N; i++) {
-      if(i != j) {
-        __mm256 rx = _mm_sub_ps(_mm_set1_ps(x[i]),x);
-        __mm256 ry = _mm_sub_ps(_mm_set1_ps(y[i]),y);
-        __mm256 recpr = _mm256_rsqrt_ps(_mm_mul_ps(rx,rx),_mm_mul_ps(ry,ry));
-        fx[i] -= rx * m[j] / recpr(r * r * r);
-        fy[i] -= ry * m[j] * _mm_mul_ps(_mm_mul_ps(recpr,recpr),recpr);
-      }
-    }
+    __m256 ivec = _mm256_set1_ps(i);
+    __m256 mask = _mm256_cmpeq_ps(ivec,rangevec);
+    __m256 rx = _mm_sub_ps(_mm_set1_ps(x[i]),x);
+    __m256 ry = _mm_sub_ps(_mm_set1_ps(y[i]),y);
+    __m256 recpr = _mm256_rsqrt_ps(_mm_mul_ps(rx,rx),_mm_mul_ps(ry,ry));
+    __m256 recpr3 = _mm_mul_ps(recpr,_mm_mul_ps(recpr,recpr));
+    fx[i] -= reduce_add(_mm256_blendv_ps(zerovec,_mm_mul_ps(rx,_mm_mul_ps(mvec,recpr3)));
+    fy[i] -= reduce_add(_mm256_blendv_ps(zerovec,_mm_mul_ps(ry,_mm_mul_ps(mvec,recpr3)));
     printf("%d %g %g\n",i,fx[i],fy[i]);
   }
 }
