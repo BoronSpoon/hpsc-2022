@@ -3,7 +3,11 @@
 #include <cmath>
 #include <immintrin.h>
 
-float reduce_sum(__m256 avec) {
+float reduce_sum(__m256 avec, int N) {
+  float a[N];
+  for (int i=0; i<N; i++){
+    a[i] = 0;
+  }
   __m256 bvec = _mm256_permute2f128_ps(avec,avec,1);
   bvec = _mm256_add_ps(bvec,avec);
   bvec = _mm256_hadd_ps(bvec,bvec);
@@ -25,17 +29,17 @@ int main() {
   __m256 xvec = _mm256_load_ps(x);
   __m256 yvec = _mm256_load_ps(y);
   __m256 mvec = _mm256_load_ps(m);
-  __m256 rangevec = _mm256_load_ps(range)
-  __m256 zerovec = _mm_setzero_ps();
+  __m256 rangevec = _mm256_load_ps(range);
+  __m256 zerovec = _mm256_setzero_ps();
   for(int i=0; i<N; i++) {
     __m256 ivec = _mm256_set1_ps(i);
-    __m256 mask = _mm256_cmpeq_ps(ivec,rangevec);
-    __m256 rx = _mm_sub_ps(_mm_set1_ps(x[i]),x);
-    __m256 ry = _mm_sub_ps(_mm_set1_ps(y[i]),y);
-    __m256 recpr = _mm256_rsqrt_ps(_mm_mul_ps(rx,rx),_mm_mul_ps(ry,ry));
-    __m256 recpr3 = _mm_mul_ps(recpr,_mm_mul_ps(recpr,recpr));
-    fx[i] -= reduce_add(_mm256_blendv_ps(zerovec,_mm_mul_ps(rx,_mm_mul_ps(mvec,recpr3)));
-    fy[i] -= reduce_add(_mm256_blendv_ps(zerovec,_mm_mul_ps(ry,_mm_mul_ps(mvec,recpr3)));
+    __m256 mask = _mm256_cmp_ps(ivec,rangevec,_CMP_NEQ_OQ);
+    __m256 rx = _mm256_sub_ps(_mm256_set1_ps(x[i]),xvec);
+    __m256 ry = _mm256_sub_ps(_mm256_set1_ps(y[i]),yvec);
+    __m256 recpr = _mm256_rsqrt_ps(_mm256_add_ps(_mm256_mul_ps(rx,rx),_mm256_mul_ps(ry,ry)));
+    __m256 recpr3 = _mm256_mul_ps(recpr,_mm256_mul_ps(recpr,recpr));
+    fx[i] -= reduce_sum(_mm256_blendv_ps(zerovec,_mm256_mul_ps(rx,_mm256_mul_ps(mvec,recpr3)),mask), N);
+    fy[i] -= reduce_sum(_mm256_blendv_ps(zerovec,_mm256_mul_ps(ry,_mm256_mul_ps(mvec,recpr3)),mask), N);
     printf("%d %g %g\n",i,fx[i],fy[i]);
   }
 }
