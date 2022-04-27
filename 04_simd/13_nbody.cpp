@@ -3,7 +3,8 @@
 #include <cmath>
 #include <immintrin.h>
 
-float reduce_sum(__m256 avec, int N) {
+float reduce_sum(__m256 avec) {
+  const int N = 8;
   float a[N];
   for (int i=0; i<N; i++){
     a[i] = 0;
@@ -38,8 +39,10 @@ int main() {
     __m256 ry = _mm256_sub_ps(_mm256_set1_ps(y[i]),yvec);
     __m256 recpr = _mm256_rsqrt_ps(_mm256_add_ps(_mm256_mul_ps(rx,rx),_mm256_mul_ps(ry,ry)));
     __m256 recpr3 = _mm256_mul_ps(recpr,_mm256_mul_ps(recpr,recpr));
-    fx[i] -= reduce_sum(_mm256_blendv_ps(zerovec,_mm256_mul_ps(rx,_mm256_mul_ps(mvec,recpr3)),mask), N);
-    fy[i] -= reduce_sum(_mm256_blendv_ps(zerovec,_mm256_mul_ps(ry,_mm256_mul_ps(mvec,recpr3)),mask), N);
+    __m256 fxivec = _mm256_blendv_ps(zerovec,_mm256_mul_ps(rx,_mm256_mul_ps(mvec,recpr3)),mask);
+    __m256 fyivec = _mm256_blendv_ps(zerovec,_mm256_mul_ps(ry,_mm256_mul_ps(mvec,recpr3)),mask);
+    fx[i] -= reduce_sum(fxivec);
+    fy[i] -= reduce_sum(fyivec);
     printf("%d %g %g\n",i,fx[i],fy[i]);
   }
 }
