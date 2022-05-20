@@ -28,7 +28,7 @@ int main (int argc, char** argv) {
   hsize_t stride[2] = {NX/dim[0], NY/dim[1]};
   for(int i=0; i<2; i++) offset[i] *= block[i];
   hid_t localspace = H5Screate_simple(2, Nlocal, NULL);
-  H5Sselect_hyperslab(globalspace, H5S_SELECT_SET, offset, stride, Nlocal, block);
+  H5Sselect_hyperslab(globalspace, H5S_SELECT_SET, offset, stride, count, block);
   H5Pclose(plist);
   vector<int> buffer(Nlocal[0]*Nlocal[1]);
   plist = H5Pcreate(H5P_DATASET_XFER);
