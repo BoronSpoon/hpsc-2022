@@ -26,7 +26,7 @@ int main (int argc, char** argv) {
   hsize_t offset[2] = {mpirank / dim[0], mpirank % dim[0]};
   hsize_t block[2] = {NX/dim[0]/2, NY/dim[1]/2};
   hsize_t stride[2] = {NX/dim[0], NY/dim[1]};
-  for(int i=0; i<2; i++) offset[i] *= block[i];
+  for(int i=0; i<2; i++) offset[i] *= Nlocal[i];
   hid_t localspace = H5Screate_simple(2, Nlocal, NULL);
   H5Sselect_hyperslab(globalspace, H5S_SELECT_SET, offset, stride, Nlocal, block);
   H5Pclose(plist);
