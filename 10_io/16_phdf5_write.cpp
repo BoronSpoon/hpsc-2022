@@ -15,7 +15,7 @@ int main (int argc, char** argv) {
   assert(mpisize == dim[0]*dim[1]);
   hsize_t N[2] = {NX, NY};
   hsize_t Nlocal[2] = {NX/dim[0], NY/dim[1]};
-  hsize_t count[2] = {dim[0], dim[1]};
+  hsize_t count[2] = {2, 2};
   hsize_t offset[2] = {mpirank / dim[0], mpirank % dim[0]};
   hsize_t block[2] = {NX/dim[0]/2, NY/dim[1]/2};
   hsize_t stride[2] = {NX/dim[0], NY/dim[1]};
