@@ -24,7 +24,7 @@ matrix b(ny,vector<double>(nx));
 
 for (int n = 0; n < nt; n++) {
     for (int j = 1; j < ny-1; j++) {
-        for (int i = 1; i < nx-1; i++) {
+        for (int i = 1; i < nx-1; i++) { // loop order is already optimal
             b[j][i] = rho * (
                 1 / dt * ((u[j][i+1] - u[j][i-1]) / (2 * dx) + (v[j+1][i] - v[j-1][i]) / (2 * dy)) -
                 ((u[j][i+1] - u[j][i-1]) / (2 * dx))**2 - 
@@ -36,7 +36,7 @@ for (int n = 0; n < nt; n++) {
     for (int it = 0; it < nit; it++) {  
         matrix pn = p; // deepcopy
         for (int j = 1; j < ny-1; j++) {
-            for (int i = 1; i < nx-1; i++) {
+            for (int i = 1; i < nx-1; i++) { // loop order is already optimal
                 p[j][i] = (
                     dy**2 * (pn[j][i+1] + pn[j][i-1]) +
                     dx**2 * (pn[j+1][i] + pn[j-1][i]) -
@@ -45,8 +45,8 @@ for (int n = 0; n < nt; n++) {
             }
         }
         for (int j = 1; j < ny-1; j++) {
-            p[j*nx + nx-1] = p[j*nx + nx-2];
-            p[j][0] = p[j*nx + 1];
+            p[j][nx-1] = p[j][nx-2];
+            p[j][0] = p[j][1];
         }
         for (int i = 1; i < nx-1; i++) {
             p[0][i] = p[1*nx + i];
@@ -57,7 +57,7 @@ for (int n = 0; n < nt; n++) {
     matrix un = u;
     matrix vn = v;
     for (int j = 1; j < ny-1; j++) {
-        for (int i = 1; i < nx-1; i++) {
+        for (int i = 1; i < nx-1; i++) { // loop order is already optimal
             u[j][i] = 
                 un[j][i] - un[j][i] * dt / dx * (un[j][i] - un[j][i-1])
                 - un[j][i] * dt / dy * (un[j][i] - un[j-1][i])
