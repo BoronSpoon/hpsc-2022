@@ -61,6 +61,11 @@ for n in range(nt):
     v[-1, :] = 0
     v[:, 0]  = 0
     v[:, -1] = 0
+    print(f"n: {n}");
+    print(f"u: mean:{np.mean(u)}, std:{np.std(u)}")
+    print(f"v: mean:{np.mean(v)}, std:{np.std(v)}")
+    print(f"p: mean:{np.mean(p)}, std:{np.std(p)}")
+    print(f"b: mean:{np.mean(b)}, std:{np.std(b)}")
     plt.contourf(X, Y, p, alpha=0.5, cmap=plt.cm.coolwarm)
     plt.quiver(X[::2, ::2], Y[::2, ::2], u[::2, ::2], v[::2, ::2])
     plt.pause(.01)

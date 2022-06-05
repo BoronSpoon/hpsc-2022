@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include<cmath>
 using namespace std;
 typedef vector<vector<double>> matrix;
 
@@ -23,6 +24,7 @@ matrix p(ny,vector<double>(nx));
 matrix b(ny,vector<double>(nx));
 
 for (int n = 0; n < nt; n++) {
+#pragma omp parallel for
     for (int j = 1; j < ny-1; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
             b[j][i] = rho * (
@@ -35,6 +37,7 @@ for (int n = 0; n < nt; n++) {
     }
     for (int it = 0; it < nit; it++) {  
         matrix pn = p; // deepcopy
+#pragma omp parallel for
         for (int j = 1; j < ny-1; j++) {
             for (int i = 1; i < nx-1; i++) { // loop order is already optimal
                 p[j][i] = (
@@ -44,18 +47,21 @@ for (int n = 0; n < nt; n++) {
                 ) / (2 * (dx**2 + dy**2));
             }
         }
+#pragma omp parallel for
         for (int j = 1; j < ny-1; j++) {
             p[j][nx-1] = p[j][nx-2];
             p[j][0] = p[j][1];
         }
+#pragma omp parallel for
         for (int i = 1; i < nx-1; i++) {
-            p[0][i] = p[1*nx + i];
+            p[0][i] = p[1][i];
             p[ny-1][i] = 0;
         }
     }
     // deepcopy
     matrix un = u;
     matrix vn = v;
+#pragma omp parallel for
     for (int j = 1; j < ny-1; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
             u[j][i] = 
@@ -72,18 +78,50 @@ for (int n = 0; n < nt; n++) {
                 + nu * dt / dy**2 * (vn[j+1][i] - 2 * vn[j][i] + vn[j-1][i]);
         }
     }
+#pragma omp parallel for
     for (int j = 1; j < ny-1; j++) {
         u[j][0]  = 0;
         u[j][nx-1] = 0;
         v[j][0]  = 0;
         v[j][nx-1] = 0;
     }
+#pragma omp parallel for
     for (int i = 1; i < nx-1; i++) {
         u[0][i]  = 0;
         u[ny-1][i] = 1;
         v[0][i]  = 0;
         v[ny-1][i] = 0;
     }
-}
+    double mean_u = 0;
+    double mean_v = 0;
+    double mean_p = 0;
+    double mean_b = 0;
 
+    double mean2_u = 0;
+    double mean2_v = 0;
+    double mean2_p = 0;
+    double mean2_b = 0;
+
+    for (int j = 0; j < ny; j++) {
+        for (int i = 0; i < nx; i++) {
+            mean_u += u[j][i]/(nx*ny);
+            mean_v += v[j][i]/(nx*ny);
+            mean_p += p[j][i]/(nx*ny);
+            mean_b += b[j][i]/(nx*ny);
+            mean2_u += pow(u[j][i],2)/(nx*ny);
+            mean2_v += pow(v[j][i],2)/(nx*ny);
+            mean2_p += pow(p[j][i],2)/(nx*ny);
+            mean2_b += pow(b[j][i],2)/(nx*ny);
+    }
+    double std_u = sqrt(abs(pow(mean_u,2)-mean2_u));
+    double std_v = sqrt(abs(pow(mean_v,2)-mean2_v));
+    double std_p = sqrt(abs(pow(mean_p,2)-mean2_p));
+    double std_b = sqrt(abs(pow(mean_b,2)-mean2_b));
+
+    printf("n: %d", n);
+    printf("u: mean:%lf, std:%lf", mean_u, std_u);
+    printf("v: mean:%lf, std:%lf", mean_v, std_v);
+    printf("p: mean:%lf, std:%lf", mean_p, std_p);
+    printf("b: mean:%lf, std:%lf", mean_b, std_b);
+}
 } // close int main()
