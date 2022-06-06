@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 nx = 41
 ny = 41
 #nt = 500
-nt = 50 # debug
+nt = 5 # debug
 nit = 50
 dx = 2 / (nx - 1)
 dy = 2 / (ny - 1)
