@@ -116,17 +116,17 @@ for (int n = 0; n < nt; n++) {
             mean2_v += pow(v[j][i],2)/(nx*ny);
             mean2_p += pow(p[j][i],2)/(nx*ny);
             mean2_b += pow(b[j][i],2)/(nx*ny);
+        }
     }
-}
-double std_u = sqrt(abs(pow(mean_u,2)-mean2_u));
-double std_v = sqrt(abs(pow(mean_v,2)-mean2_v));
-double std_p = sqrt(abs(pow(mean_p,2)-mean2_p));
-double std_b = sqrt(abs(pow(mean_b,2)-mean2_b));
+    double std_u = sqrt(abs(pow(mean_u,2)-mean2_u));
+    double std_v = sqrt(abs(pow(mean_v,2)-mean2_v));
+    double std_p = sqrt(abs(pow(mean_p,2)-mean2_p));
+    double std_b = sqrt(abs(pow(mean_b,2)-mean2_b));
 
-printf("n: %d\n", n);
-printf("u: mean:%lf, std:%lf\n", mean_u, std_u);
-printf("v: mean:%lf, std:%lf\n", mean_v, std_v);
-printf("p: mean:%lf, std:%lf\n", mean_p, std_p);
-printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
+    printf("n: %d\n", n);
+    printf("u: mean:%lf, std:%lf\n", mean_u, std_u);
+    printf("v: mean:%lf, std:%lf\n", mean_v, std_v);
+    printf("p: mean:%lf, std:%lf\n", mean_p, std_p);
+    printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
 }
 } // close int main()
