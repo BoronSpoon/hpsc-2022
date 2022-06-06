@@ -11,7 +11,8 @@ int main() {
 
 int nx = 41;
 int ny = 41;
-int nt = 500;
+//int nt = 500;
+int nt = 5; // debug
 int nit = 50;
 double dx = 2 / (nx - 1);
 double dy = 2 / (ny - 1);
