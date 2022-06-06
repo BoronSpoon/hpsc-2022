@@ -121,11 +121,11 @@ for (int n = 0; n < nt; n++) {
     double std_p = sqrt(abs(pow(mean_p,2)-mean2_p));
     double std_b = sqrt(abs(pow(mean_b,2)-mean2_b));
 
-    printf("n: %d", n);
-    printf("u: mean:%lf, std:%lf", mean_u, std_u);
-    printf("v: mean:%lf, std:%lf", mean_v, std_v);
-    printf("p: mean:%lf, std:%lf", mean_p, std_p);
-    printf("b: mean:%lf, std:%lf", mean_b, std_b);
+    printf("n: %d\n", n);
+    printf("u: mean:%lf, std:%lf\n", mean_u, std_u);
+    printf("v: mean:%lf, std:%lf\n", mean_v, std_v);
+    printf("p: mean:%lf, std:%lf\n", mean_p, std_p);
+    printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
 }
 }
 } // close int main()
