@@ -1,2 +1,5 @@
 *.out
 14_pde/.vscode/settings.json
+14_pde/.vscode/tasks.json
+*.exe
+*.json
