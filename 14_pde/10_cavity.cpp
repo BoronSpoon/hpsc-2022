@@ -11,7 +11,7 @@ typedef vector<vector<double>> matrix;
 // openmp: 
 // mpi: 
 int main() {
-
+auto tic = chrono::steady_clock::now();
 int nx = 41;
 int ny = 41;
 int nt = 500;
@@ -98,7 +98,7 @@ for (int n = 0; n < nt; n++) {
         u[ny-1][i] = 1;
         v[0][i]    = 0;
         v[ny-1][i] = 0;
-    }
+    }/*
     double mean_u = 0;
     double mean_v = 0;
     double mean_p = 0;
@@ -131,5 +131,9 @@ for (int n = 0; n < nt; n++) {
     printf("v: mean:%lf, std:%lf\n", mean_v, std_v);
     printf("p: mean:%lf, std:%lf\n", mean_p, std_p);
     printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
+*/
 }
+auto toc = chrono::steady_clock::now();
+double time = chrono::duration<double>(toc - tic).count();
+printf("%lf s",time);
 } // close int main()
