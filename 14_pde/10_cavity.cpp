@@ -44,8 +44,8 @@ int end_jny = min(ny, (rank+1) * (ny/size));
 int begin_inx = rank * (nx/size);
 int end_inx = min(nx, (rank+1) * (nx/size));
 // it = 0 ~ nit
-int begin_it = rank * (nit/size);
-int end_it = min(nit, (rank+1) * (nit/size));
+//int begin_it = rank * (nit/size);
+//int end_it = min(nit, (rank+1) * (nit/size));
 printf("rank:%d, size:%d, jnym2:%d~%d, jny:%d~%d, inx:%d~%d, it:%d~%d", rank, size, begin_jnym2, end_jnym2, begin_jny, end_jny, begin_inx, end_inx, begin_it, end_it); // debug
 for (int n = 0; n < nt; n++) {
     for (int j = begin_jnym2; j < end_jnym2; j++) {
@@ -58,9 +58,9 @@ for (int n = 0; n < nt; n++) {
             );
         }
     }
-    for (int it = begin_it; it < end_it; it++) {  
+    for (int it = 0; it < nit; it++) {  
         matrix pn = p; // deepcopy
-        for (int j = 1; j < ny-1; j++) {
+        for (int j = begin_jnym2; j < end_jnym2; j++) {
             for (int i = 1; i < nx-1; i++) { // loop order is already optimal
                 p[j][i] = (
                     pow(dy, 2) * (pn[j][i+1] + pn[j][i-1]) +
@@ -69,11 +69,11 @@ for (int n = 0; n < nt; n++) {
                 ) / (2 * (pow(dx, 2) + pow(dy, 2)));
             }
         }
-        for (int j = 0; j < ny; j++) {
+        for (int j = begin_jny; j < end_jny; j++) {
             p[j][nx-1] = p[j][nx-2];
             p[j][0] = p[j][1];
         }
-        for (int i = 0; i < nx; i++) {
+        for (int i = begin_inx; i < end_inx; i++) {
             p[0][i] = p[1][i];
             p[ny-1][i] = 0;
         }
