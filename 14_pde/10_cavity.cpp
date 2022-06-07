@@ -14,8 +14,8 @@ int ny = 41;
 //int nt = 500;
 int nt = 5; // debug
 int nit = 50;
-double dx = 2 / (nx - 1);
-double dy = 2 / (ny - 1);
+double dx = 2 / (double(nx) - 1);
+double dy = 2 / (double(ny) - 1);
 double dt = 0.01;
 double rho = 1;
 double nu = 0.02;
@@ -52,12 +52,12 @@ for (int n = 0; n < nt; n++) {
             }
         }
 //#pragma omp parallel for
-        for (int j = 1; j < ny-1; j++) {
+        for (int j = 0; j < ny; j++) {
             p[j][nx-1] = p[j][nx-2];
             p[j][0] = p[j][1];
         }
 //#pragma omp parallel for
-        for (int i = 1; i < nx-1; i++) {
+        for (int i = 0; i < nx; i++) {
             p[0][i] = p[1][i];
             p[ny-1][i] = 0;
         }
@@ -68,14 +68,14 @@ for (int n = 0; n < nt; n++) {
 //#pragma omp parallel for
     for (int j = 1; j < ny-1; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
-            u[j][i] = 
-                un[j][i] - un[j][i] * dt / dx * (un[j][i] - un[j][i-1])
+            u[j][i] = un[j][i] 
+                - un[j][i] * dt / dx * (un[j][i] - un[j][i-1])
                 - un[j][i] * dt / dy * (un[j][i] - un[j-1][i])
                 - dt / (2 * rho * dx) * (p[j][i+1] - p[j][i-1])
                 + nu * dt / pow(dx, 2) * (un[j][i+1] - 2 * un[j][i] + un[j][i-1])
                 + nu * dt / pow(dy, 2) * (un[j+1][i] - 2 * un[j][i] + un[j-1][i]);
-            v[j][i] = 
-                vn[j][i] - vn[j][i] * dt / dx * (vn[j][i] - vn[j][i-1])
+            v[j][i] = vn[j][i] 
+                - vn[j][i] * dt / dx * (vn[j][i] - vn[j][i-1])
                 - vn[j][i] * dt / dy * (vn[j][i] - vn[j-1][i])
                 - dt / (2 * rho * dx) * (p[j+1][i] - p[j-1][i])
                 + nu * dt / pow(dx, 2) * (vn[j][i+1] - 2 * vn[j][i] + vn[j][i-1])
@@ -83,17 +83,17 @@ for (int n = 0; n < nt; n++) {
         }
     }
 //#pragma omp parallel for
-    for (int j = 1; j < ny-1; j++) {
-        u[j][0]  = 0;
+    for (int j = 0; j < ny; j++) {
+        u[j][0]    = 0;
         u[j][nx-1] = 0;
-        v[j][0]  = 0;
+        v[j][0]    = 0;
         v[j][nx-1] = 0;
     }
 //#pragma omp parallel for
-    for (int i = 1; i < nx-1; i++) {
-        u[0][i]  = 0;
+    for (int i = 0; i < nx; i++) {
+        u[0][i]    = 0;
         u[ny-1][i] = 1;
-        v[0][i]  = 0;
+        v[0][i]    = 0;
         v[ny-1][i] = 0;
     }
     double mean_u = 0;
