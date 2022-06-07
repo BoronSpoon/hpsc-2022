@@ -4,14 +4,13 @@
 #include <vector>
 #include <cmath>
 #include <chrono>
-#include <mpi.h>
 using namespace std;
 typedef vector<vector<double>> matrix;
 // python: 
 // normal cpp: 
 // openmp: 
 // mpi: 
-int main(int argc, char** argv) {
+int main() {
 auto tic = chrono::steady_clock::now();
 int nx = 41;
 int ny = 41;
@@ -23,10 +22,7 @@ double dy = 2 / (double(ny) - 1);
 double dt = 0.01;
 double rho = 1;
 double nu = 0.02;
-MPI_Init(&argc, &argv);
-int size, rank;
-MPI_Comm_size(MPI_COMM_WORLD, &size);
-MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 // np.zeros() default dtype float64 = double (in c)
 // vector defaults to zero
 matrix u(ny,vector<double>(nx)); 
@@ -34,21 +30,9 @@ matrix v(ny,vector<double>(nx));
 matrix p(ny,vector<double>(nx));
 matrix b(ny,vector<double>(nx));
 
-// j = 1 ~ ny-2
-int begin_jnym2 = 1 + rank * ((ny-2)/size);
-int end_jnym2 = 1 + min(ny-2, (rank+1) * ((ny-2)/size));
-// j = 0 ~ ny-1
-int begin_jny = rank * (ny/size);
-int end_jny = min(ny, (rank+1) * (ny/size));
-// i = 0 ~ nx-1
-int begin_inx = rank * (nx/size);
-int end_inx = min(nx, (rank+1) * (nx/size));
-// it = 0 ~ nit
-int begin_it = rank * (nit/size);
-int end_it = min(nit, (rank+1) * (nit/size));
-printf("rank:%d, size:%d, jnym2:%d~%d, jny:%d~%d, it:%d~%d", rank, size, begin_jnym2, end_jnym2, begin_jny, end_jny, begin_it, end_it); // debug
 for (int n = 0; n < nt; n++) {
-    for (int j = begin_jnym2; j < end_jnym2; j++) {
+#pragma omp parallel for
+    for (int j = 1; j < ny-1; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
             b[j][i] = rho * (
                 1 / dt * ((u[j][i+1] - u[j][i-1]) / (2 * dx) + (v[j+1][i] - v[j-1][i]) / (2 * dy)) -
@@ -58,8 +42,9 @@ for (int n = 0; n < nt; n++) {
             );
         }
     }
-    for (int it = begin_it; it < end_it; it++) {  
+    for (int it = 0; it < nit; it++) {  
         matrix pn = p; // deepcopy
+#pragma omp parallel for
         for (int j = 1; j < ny-1; j++) {
             for (int i = 1; i < nx-1; i++) { // loop order is already optimal
                 p[j][i] = (
@@ -69,10 +54,12 @@ for (int n = 0; n < nt; n++) {
                 ) / (2 * (pow(dx, 2) + pow(dy, 2)));
             }
         }
+#pragma omp parallel for
         for (int j = 0; j < ny; j++) {
             p[j][nx-1] = p[j][nx-2];
             p[j][0] = p[j][1];
         }
+#pragma omp parallel for
         for (int i = 0; i < nx; i++) {
             p[0][i] = p[1][i];
             p[ny-1][i] = 0;
@@ -81,7 +68,8 @@ for (int n = 0; n < nt; n++) {
     // deepcopy
     matrix un = u;
     matrix vn = v;
-    for (int j = begin_jnym2; j < end_jnym2; j++) {
+#pragma omp parallel for
+    for (int j = 1; j < ny-1; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
             u[j][i] = un[j][i] 
                 - un[j][i] * dt / dx * (un[j][i] - un[j][i-1])
@@ -97,13 +85,15 @@ for (int n = 0; n < nt; n++) {
                 + nu * dt / pow(dy, 2) * (vn[j+1][i] - 2 * vn[j][i] + vn[j-1][i]);
         }
     }
-    for (int j = begin_jny; j < end_jny; j++) {
+#pragma omp parallel for
+    for (int j = 0; j < ny; j++) {
         u[j][0]    = 0;
         u[j][nx-1] = 0;
         v[j][0]    = 0;
         v[j][nx-1] = 0;
     }
-    for (int i = begin_inx; i < end_inx; i++) {
+#pragma omp parallel for
+    for (int i = 0; i < nx; i++) {
         u[0][i]    = 0;
         u[ny-1][i] = 1;
         v[0][i]    = 0;
@@ -143,7 +133,6 @@ for (int n = 0; n < nt; n++) {
     printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
 */
 }
-MPI_Finalize();
 auto toc = chrono::steady_clock::now();
 double time = chrono::duration<double>(toc - tic).count();
 printf("%lf s",time);
