@@ -46,7 +46,7 @@ int end_inx = min(nx, (rank+1) * (nx/size));
 // it = 0 ~ nit
 int begin_it = rank * (nit/size);
 int end_it = min(nit, (rank+1) * (nit/size));
-printf("rank:%d, size:%d, jnym2:%d~%d, jny:%d~%d, it:%d~%d", rank, size, begin_jnym2, end_jnym2, begin_jny, end_jny, begin_it, end_it); // debug
+printf("rank:%d, size:%d, jnym2:%d~%d, jny:%d~%d, inx:%d~%d, it:%d~%d", rank, size, begin_jnym2, end_jnym2, begin_jny, end_jny, begin_inx, end_inx, begin_it, end_it); // debug
 for (int n = 0; n < nt; n++) {
     for (int j = begin_jnym2; j < end_jnym2; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
