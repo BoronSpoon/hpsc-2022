@@ -40,10 +40,6 @@ if (rank == size-1) {
     int ny_split = (ny-2)/size;
     ny_split = ny_split + 2; // include before and after elements
 }
-// data type for allgather
-MPI_Datatype MPI_BODY;
-MPI_Type_contiguous(ny_split*nx, MPI_DOUBLE, &MPI_BODY);
-MPI_Type_commit(&MPI_BODY);
 // np.zeros() default dtype float64 = double (in c)
 // vector defaults to zero
 // store split data
@@ -163,13 +159,13 @@ for (int n = 0; n < nt; n++) {
         }
     }
     if (rank == size-1){
-        MPI_Gather(&u0[rank*ny_split0*nx], ny_split*nx, MPI_BODY, u, ny_split*nx, MPI_BODY, 0, MPI_COMM_WORLD);
-        MPI_Gather(&v0[rank*ny_split0*nx], ny_split*nx, MPI_BODY, v, ny_split*nx, MPI_BODY, 0, MPI_COMM_WORLD);
-        MPI_Gather(&p0[rank*ny_split0*nx], ny_split*nx, MPI_BODY, p, ny_split*nx, MPI_BODY, 0, MPI_COMM_WORLD);
+        MPI_Gather(&u0[rank*ny_split0*nx], ny_split*nx, MPI_DOUBLE, u, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&v0[rank*ny_split0*nx], ny_split*nx, MPI_DOUBLE, v, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&p0[rank*ny_split0*nx], ny_split*nx, MPI_DOUBLE, p, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Gather(&u0[rank*ny_split*nx], ny_split*nx, MPI_BODY, u, ny_split*nx, MPI_BODY, 0, MPI_COMM_WORLD);
-        MPI_Gather(&v0[rank*ny_split*nx], ny_split*nx, MPI_BODY, v, ny_split*nx, MPI_BODY, 0, MPI_COMM_WORLD);
-        MPI_Gather(&p0[rank*ny_split*nx], ny_split*nx, MPI_BODY, p, ny_split*nx, MPI_BODY, 0, MPI_COMM_WORLD);
+        MPI_Gather(&u0[rank*ny_split*nx], ny_split*nx, MPI_DOUBLE, u, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&v0[rank*ny_split*nx], ny_split*nx, MPI_DOUBLE, v, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&p0[rank*ny_split*nx], ny_split*nx, MPI_DOUBLE, p, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     }
     if (rank == 0) {
         double mean_u = 0;
