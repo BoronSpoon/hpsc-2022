@@ -64,7 +64,7 @@ for (int n = 0; n < nt; n++) {
                 ) / (2 * (pow(dx, 2) + pow(dy, 2)));
             }
         }
-        for (int j = begin_jny; j < end_jny; j++) {
+        for (int j = begin_jnym2; j < end_jnym2; j++) {
             p[j][nx-1] = p[j][nx-2];
             p[j][0] = p[j][1];
         }
