@@ -34,19 +34,14 @@ matrix v(ny,vector<double>(nx));
 matrix p(ny,vector<double>(nx));
 matrix b(ny,vector<double>(nx));
 
+// split j for MPI
 // j = 1 ~ ny-2
 int begin_jnym2 = 1 + rank * ((ny-2)/size);
 int end_jnym2 = 1 + min(ny-2, (rank+1) * ((ny-2)/size));
 // j = 0 ~ ny-1
 int begin_jny = rank * (ny/size);
 int end_jny = min(ny, (rank+1) * (ny/size));
-// i = 0 ~ nx-1
-int begin_inx = rank * (nx/size);
-int end_inx = min(nx, (rank+1) * (nx/size));
-// it = 0 ~ nit
-//int begin_it = rank * (nit/size);
-//int end_it = min(nit, (rank+1) * (nit/size));
-printf("rank:%d, size:%d, jnym2:%d~%d, jny:%d~%d, inx:%d~%d, it:%d~%d", rank, size, begin_jnym2, end_jnym2, begin_jny, end_jny, begin_inx, end_inx, begin_it, end_it); // debug
+printf("rank:%d, size:%d, jnym2:%d~%d, jny:%d~%d", rank, size, begin_jnym2, end_jnym2, begin_jny, end_jny); // debug
 for (int n = 0; n < nt; n++) {
     for (int j = begin_jnym2; j < end_jnym2; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
@@ -73,9 +68,12 @@ for (int n = 0; n < nt; n++) {
             p[j][nx-1] = p[j][nx-2];
             p[j][0] = p[j][1];
         }
-        for (int i = begin_inx; i < end_inx; i++) {
-            p[0][i] = p[1][i];
-            p[ny-1][i] = 0;
+        if (begin_jny == 0){
+            for (int i = 0; i < nx; i++) p[0][i] = p[1][i];
+        }
+        else if (end_jny == ny){
+            for (int i = 0; i < nx; i++) p[ny-1][i] = 0;
+        }
         }
     }
     // deepcopy
@@ -103,11 +101,17 @@ for (int n = 0; n < nt; n++) {
         v[j][0]    = 0;
         v[j][nx-1] = 0;
     }
-    for (int i = begin_inx; i < end_inx; i++) {
-        u[0][i]    = 0;
-        u[ny-1][i] = 1;
-        v[0][i]    = 0;
-        v[ny-1][i] = 0;
+    if (begin_jny == 0){
+        for (int i = 0; i < nx; i++) {
+            u[0][i] = 0;
+            v[0][i] = 0;
+        }
+    } else if (end_jny == ny){
+        for (int i = 0; i < nx; i++) {
+            u[ny-1][i] = 1;
+            v[ny-1][i] = 0;
+        }
+    }
     }/*
     double mean_u = 0;
     double mean_v = 0;
