@@ -166,40 +166,40 @@ for (int n = 0; n < nt; n++) {
         MPI_Gather(&v0[rank*ny_split], ny_split, MPI_DOUBLE, x, end-begin, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         MPI_Gather(&p0[rank*ny_split], ny_split, MPI_DOUBLE, x, end-begin, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     }
-    /*
-    double mean_u = 0;
-    double mean_v = 0;
-    double mean_p = 0;
-    double mean_b = 0;
+    if (rank == 0) {
+        double mean_u = 0;
+        double mean_v = 0;
+        double mean_p = 0;
+        double mean_b = 0;
 
-    double mean2_u = 0;
-    double mean2_v = 0;
-    double mean2_p = 0;
-    double mean2_b = 0;
+        double mean2_u = 0;
+        double mean2_v = 0;
+        double mean2_p = 0;
+        double mean2_b = 0;
 
-    for (int j = 0; j < ny; j++) {
-        for (int i = 0; i < nx; i++) {
-            mean_u += u[j][i]/(nx*ny);
-            mean_v += v[j][i]/(nx*ny);
-            mean_p += p[j][i]/(nx*ny);
-            mean_b += b[j][i]/(nx*ny);
-            mean2_u += pow(u[j][i],2)/(nx*ny);
-            mean2_v += pow(v[j][i],2)/(nx*ny);
-            mean2_p += pow(p[j][i],2)/(nx*ny);
-            mean2_b += pow(b[j][i],2)/(nx*ny);
+        for (int j = 0; j < ny; j++) {
+            for (int i = 0; i < nx; i++) {
+                mean_u += u0[j][i]/(nx*ny);
+                mean_v += v0[j][i]/(nx*ny);
+                mean_p += p0[j][i]/(nx*ny);
+                mean_b += b0[j][i]/(nx*ny);
+                mean2_u += pow(u0[j][i],2)/(nx*ny);
+                mean2_v += pow(v0[j][i],2)/(nx*ny);
+                mean2_p += pow(p0[j][i],2)/(nx*ny);
+                mean2_b += pow(b0[j][i],2)/(nx*ny);
+            }
         }
-    }
-    double std_u = sqrt(abs(pow(mean_u,2)-mean2_u));
-    double std_v = sqrt(abs(pow(mean_v,2)-mean2_v));
-    double std_p = sqrt(abs(pow(mean_p,2)-mean2_p));
-    double std_b = sqrt(abs(pow(mean_b,2)-mean2_b));
+        double std_u = sqrt(abs(pow(mean_u,2)-mean2_u));
+        double std_v = sqrt(abs(pow(mean_v,2)-mean2_v));
+        double std_p = sqrt(abs(pow(mean_p,2)-mean2_p));
+        double std_b = sqrt(abs(pow(mean_b,2)-mean2_b));
 
-    printf("n: %d\n", n);
-    printf("u: mean:%lf, std:%lf\n", mean_u, std_u);
-    printf("v: mean:%lf, std:%lf\n", mean_v, std_v);
-    printf("p: mean:%lf, std:%lf\n", mean_p, std_p);
-    printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
-*/
+        printf("n: %d\n", n);
+        printf("u: mean:%lf, std:%lf\n", mean_u, std_u);
+        printf("v: mean:%lf, std:%lf\n", mean_v, std_v);
+        printf("p: mean:%lf, std:%lf\n", mean_p, std_p);
+        printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
+    }
 }
 MPI_Win_free(&win);
 MPI_Finalize();
