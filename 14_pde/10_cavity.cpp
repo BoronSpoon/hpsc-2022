@@ -14,8 +14,8 @@ int main(int argc, char** argv) {
 auto tic = chrono::steady_clock::now();
 int nx = 41;
 int ny = 41;
-int nt = 500;
-//int nt = 5; // debug
+//int nt = 500;
+int nt = 5; // debug
 int nit = 50;
 int send_to = 0;
 int ny_split = 0;
