@@ -29,27 +29,28 @@ MPI_Comm_size(MPI_COMM_WORLD, &size);
 MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 // np.zeros() default dtype float64 = double (in c)
 // vector defaults to zero
-matrix u(ny,vector<double>(nx)); 
+matrix u(ny,vector<double>(nx));
 matrix v(ny,vector<double>(nx));
 matrix p(ny,vector<double>(nx));
 matrix b(ny,vector<double>(nx));
+vector<double> u_before(nx);
+vector<double> v_before(nx);
+vector<double> p_before(nx);
+vector<double> b_before(nx);
+vector<double> u_after(nx);
+vector<double> v_after(nx);
+vector<double> p_after(nx);
+vector<double> b_after(nx);
 
 // split j for MPI
-// j = 0 ~ ny-1
-int begin_jny = rank * (ny/size);
-int end_jny = min(ny, (rank+1) * (ny/size));
-// j = 1 ~ ny-2
-if (rank == 0){
-    int begin_jnym2 = begin_jny;
-} else { 
-    int begin_jnym2 = begin_jny + 1;
-}
+// split j = 1 ~ ny-2 into size
 if (rank == size-1) {
-    int end_jnym2 = end_jny;
-} else { 
-    int end_jnym2 = end_jny - 1;
+    int ny_split = (ny-2)/size;
+    ny_split = (ny-2) - (size-1)*ny_split;
+} else {
+    int ny_split = (ny-2)/size;
 }
-printf("rank:%d, size:%d, jnym2:%d~%d, jny:%d~%d", rank, size, begin_jnym2, end_jnym2, begin_jny, end_jny); // debug
+printf("rank: %d,ny_split:%d\n", rank, ny_split); // debug
 for (int n = 0; n < nt; n++) {
     for (int j = begin_jnym2; j < end_jnym2; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
