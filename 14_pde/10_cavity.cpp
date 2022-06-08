@@ -19,6 +19,8 @@ int nt = 500;
 //int nt = 5; // debug
 int nit = 50;
 int send_to = 0;
+int ny_split = 0;
+int ny_split0 = 0;
 double dx = 2 / (double(nx) - 1);
 double dy = 2 / (double(ny) - 1);
 double dt = 0.01;
@@ -39,7 +41,10 @@ if (rank == size-1) {
     int ny_split = (ny-2)/size;
     ny_split = ny_split + 2; // include before and after elements
 }
-
+// data type for allgather
+MPI_Datatype MPI_BODY;
+MPI_Type_vector(ny_split, nx, MPI_DOUBLE, &MPI_BODY);
+MPI_Type_commit(&MPI_BODY);
 // np.zeros() default dtype float64 = double (in c)
 // vector defaults to zero
 // store split data
@@ -51,9 +56,10 @@ matrix b(ny_split,vector<double>(nx));
 matrix u0(ny,vector<double>(nx));
 matrix v0(ny,vector<double>(nx));
 matrix p0(ny,vector<double>(nx));
+matrix b0(ny,vector<double>(nx));
 printf("rank: %d,ny_split:%d\n", rank, ny_split); // debug
+MPI_Win win;
 for (int n = 0; n < nt; n++) {
-    MPI_Win win;
     for (int j = 1; j < ny_split-1; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
             b[j][i] = rho * (
@@ -158,13 +164,13 @@ for (int n = 0; n < nt; n++) {
         }
     }
     if (rank == size-1){
-        MPI_Gather(&u0[rank*ny_split0], ny_split, MPI_DOUBLE, x, end-begin, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Gather(&v0[rank*ny_split0], ny_split, MPI_DOUBLE, x, end-begin, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Gather(&p0[rank*ny_split0], ny_split, MPI_DOUBLE, x, end-begin, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&u0[rank*ny_split0], ny_split, MPI_BODY, u, ny_split, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&v0[rank*ny_split0], ny_split, MPI_BODY, v, ny_split, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&p0[rank*ny_split0], ny_split, MPI_BODY, p, ny_split, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Gather(&u0[rank*ny_split], ny_split, MPI_DOUBLE, x, end-begin, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Gather(&v0[rank*ny_split], ny_split, MPI_DOUBLE, x, end-begin, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Gather(&p0[rank*ny_split], ny_split, MPI_DOUBLE, x, end-begin, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&u0[rank*ny_split], ny_split, MPI_BODY, u, ny_split, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&v0[rank*ny_split], ny_split, MPI_BODY, v, ny_split, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&p0[rank*ny_split], ny_split, MPI_BODY, p, ny_split, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     }
     if (rank == 0) {
         double mean_u = 0;
