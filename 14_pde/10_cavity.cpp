@@ -18,6 +18,7 @@ int ny = 41;
 int nt = 500;
 //int nt = 5; // debug
 int nit = 50;
+int send_to = 0;
 double dx = 2 / (double(nx) - 1);
 double dy = 2 / (double(ny) - 1);
 double dt = 0.01;
@@ -27,20 +28,6 @@ MPI_Init(&argc, &argv);
 int size, rank;
 MPI_Comm_size(MPI_COMM_WORLD, &size);
 MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-// np.zeros() default dtype float64 = double (in c)
-// vector defaults to zero
-matrix u(ny,vector<double>(nx));
-matrix v(ny,vector<double>(nx));
-matrix p(ny,vector<double>(nx));
-matrix b(ny,vector<double>(nx));
-vector<double> u_before(nx);
-vector<double> v_before(nx);
-vector<double> p_before(nx);
-vector<double> b_before(nx);
-vector<double> u_after(nx);
-vector<double> v_after(nx);
-vector<double> p_after(nx);
-vector<double> b_after(nx);
 
 // split j for MPI
 // split j = 1 ~ ny-2 into size
@@ -50,9 +37,17 @@ if (rank == size-1) {
 } else {
     int ny_split = (ny-2)/size;
 }
+
+// np.zeros() default dtype float64 = double (in c)
+// vector defaults to zero
+matrix u(ny_split+2,vector<double>(nx)); // include before and after elements
+matrix v(ny_split+2,vector<double>(nx));
+matrix p(ny_split+2,vector<double>(nx));
+matrix b(ny_split+2,vector<double>(nx));
 printf("rank: %d,ny_split:%d\n", rank, ny_split); // debug
 for (int n = 0; n < nt; n++) {
-    for (int j = begin_jnym2; j < end_jnym2; j++) {
+    MPI_Win win;
+    for (int j = 1; j < ny_split-1; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
             b[j][i] = rho * (
                 1 / dt * ((u[j][i+1] - u[j][i-1]) / (2 * dx) + (v[j+1][i] - v[j-1][i]) / (2 * dy)) -
@@ -64,7 +59,7 @@ for (int n = 0; n < nt; n++) {
     }
     for (int it = 0; it < nit; it++) {  
         matrix pn = p; // deepcopy
-        for (int j = begin_jnym2; j < end_jnym2; j++) {
+        for (int j = 1; j < ny_split-1; j++) {
             for (int i = 1; i < nx-1; i++) { // loop order is already optimal
                 p[j][i] = (
                     pow(dy, 2) * (pn[j][i+1] + pn[j][i-1]) +
@@ -73,22 +68,33 @@ for (int n = 0; n < nt; n++) {
                 ) / (2 * (pow(dx, 2) + pow(dy, 2)));
             }
         }
-        for (int j = begin_jnym2; j < end_jnym2; j++) {
+        for (int j = 1; j < ny_split-1; j++) {
             p[j][nx-1] = p[j][nx-2];
             p[j][0] = p[j][1];
         }
-        if (begin_jny == 0){
+        // send p to rank + 1 (including rank = 0 and -1)
+        send_to = (rank + 1) % size;
+        MPI_Win_create(p[0], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
+        MPI_Win_fence(0, win);
+        MPI_Put(p[ny_split-2], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
+        MPI_Win_fence(0, win);
+        // send p to rank - 1 (including rank = 0 and -1)
+        send_to = (rank - 1 + size) % size;
+        MPI_Win_create(p[ny_split-1], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
+        MPI_Win_fence(0, win);
+        MPI_Put(p[1], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
+        MPI_Win_fence(0, win);
+        if (rank == 0){ // fix values for rank = 0
             for (int i = 0; i < nx; i++) p[0][i] = p[1][i];
+        } else if (rank == size-1){ // fix values for rank = -1
+            for (int i = 0; i < nx; i++) p[ny_split-1][i] = 0;
         }
-        else if (end_jny == ny){
-            for (int i = 0; i < nx; i++) p[ny-1][i] = 0;
-        }
-        }
+    }
     }
     // deepcopy
     matrix un = u;
     matrix vn = v;
-    for (int j = begin_jnym2; j < end_jnym2; j++) {
+    for (int j = 1; j < ny_split-1; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
             u[j][i] = un[j][i] 
                 - un[j][i] * dt / dx * (un[j][i] - un[j][i-1])
@@ -104,21 +110,45 @@ for (int n = 0; n < nt; n++) {
                 + nu * dt / pow(dy, 2) * (vn[j+1][i] - 2 * vn[j][i] + vn[j-1][i]);
         }
     }
-    for (int j = begin_jny; j < end_jny; j++) {
+    for (int j = 1; j < ny_split-1; j++) {
         u[j][0]    = 0;
         u[j][nx-1] = 0;
         v[j][0]    = 0;
         v[j][nx-1] = 0;
-    }
-    if (begin_jny == 0){
+    }        
+    // send u to rank + 1 (including rank = 0 and -1)
+    send_to = (rank + 1) % size;
+    MPI_Win_create(u[0], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
+    MPI_Win_fence(0, win);
+    MPI_Put(u[ny_split-2], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
+    MPI_Win_fence(0, win);
+    // send u to rank - 1 (including rank = 0 and -1)
+    send_to = (rank - 1 + size) % size;
+    MPI_Win_create(u[ny_split-1], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
+    MPI_Win_fence(0, win);
+    MPI_Put(u[1], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
+    MPI_Win_fence(0, win);
+    // send v to rank + 1 (including rank = 0 and -1)
+    send_to = (rank + 1) % size;
+    MPI_Win_create(v[0], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
+    MPI_Win_fence(0, win);
+    MPI_Put(v[ny_split-2], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
+    MPI_Win_fence(0, win);
+    // send v to rank - 1 (including rank = 0 and -1)
+    send_to = (rank - 1 + size) % size;
+    MPI_Win_create(v[ny_split-1], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
+    MPI_Win_fence(0, win);
+    MPI_Put(v[1], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
+    MPI_Win_fence(0, win);
+    if (rank == 0){
         for (int i = 0; i < nx; i++) {
             u[0][i] = 0;
             v[0][i] = 0;
         }
-    } else if (end_jny == ny){
+    } else if (rank == size-1){
         for (int i = 0; i < nx; i++) {
-            u[ny-1][i] = 1;
-            v[ny-1][i] = 0;
+            u[ny_split-1][i] = 1;
+            v[ny_split-1][i] = 0;
         }
     }
     }/*
@@ -156,6 +186,7 @@ for (int n = 0; n < nt; n++) {
     printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
 */
 }
+MPI_Win_free(&win);
 MPI_Finalize();
 auto toc = chrono::steady_clock::now();
 double time = chrono::duration<double>(toc - tic).count();
