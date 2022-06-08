@@ -66,7 +66,7 @@ for (int n = 0; n < nt; n++) {
         }
     }
     for (int it = 0; it < nit; it++) {
-        matrix pn = p; // deepcopy
+        vector<double> pn = p; // deepcopy
         for (int j = 1; j < ny_split-1; j++) {
             for (int i = 1; i < nx-1; i++) { // loop order is already optimal
                 p[j*nx + i] = (
@@ -99,8 +99,8 @@ for (int n = 0; n < nt; n++) {
         }
     }
     // deepcopy
-    matrix un = u;
-    matrix vn = v;
+    vector<double> un = u;
+    vector<double> vn = v;
     for (int j = 1; j < ny_split-1; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
             u[j*nx + i] = un[j*nx + i] 
