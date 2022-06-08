@@ -35,12 +35,20 @@ matrix p(ny,vector<double>(nx));
 matrix b(ny,vector<double>(nx));
 
 // split j for MPI
-// j = 1 ~ ny-2
-int begin_jnym2 = 1 + rank * ((ny-2)/size);
-int end_jnym2 = 1 + min(ny-2, (rank+1) * ((ny-2)/size));
 // j = 0 ~ ny-1
 int begin_jny = rank * (ny/size);
 int end_jny = min(ny, (rank+1) * (ny/size));
+// j = 1 ~ ny-2
+if (rank == 0){
+    int begin_jnym2 = begin_jny;
+} else { 
+    int begin_jnym2 = begin_jny + 1;
+}
+if (rank == size-1) {
+    int end_jnym2 = end_jny;
+} else { 
+    int end_jnym2 = end_jny - 1;
+}
 printf("rank:%d, size:%d, jnym2:%d~%d, jny:%d~%d", rank, size, begin_jnym2, end_jnym2, begin_jny, end_jny); // debug
 for (int n = 0; n < nt; n++) {
     for (int j = begin_jnym2; j < end_jnym2; j++) {
