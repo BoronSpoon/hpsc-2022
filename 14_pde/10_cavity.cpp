@@ -32,18 +32,25 @@ MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 // split j for MPI
 // split j = 1 ~ ny-2 into size
 if (rank == size-1) {
-    int ny_split = (ny-2)/size;
-    ny_split = (ny-2) - (size-1)*ny_split;
+    int ny_split0 = (ny-2)/size; // nysplit for rank =/= size-1
+    int ny_split = (ny-2) - (size-1)*ny_split0;
+    ny_split = ny_split + 2; // include before and after elements
 } else {
     int ny_split = (ny-2)/size;
+    ny_split = ny_split + 2; // include before and after elements
 }
 
 // np.zeros() default dtype float64 = double (in c)
 // vector defaults to zero
-matrix u(ny_split+2,vector<double>(nx)); // include before and after elements
-matrix v(ny_split+2,vector<double>(nx));
-matrix p(ny_split+2,vector<double>(nx));
-matrix b(ny_split+2,vector<double>(nx));
+// store split data
+matrix u(ny_split,vector<double>(nx));
+matrix v(ny_split,vector<double>(nx));
+matrix p(ny_split,vector<double>(nx));
+matrix b(ny_split,vector<double>(nx));
+// store all data
+matrix u0(ny,vector<double>(nx));
+matrix v0(ny,vector<double>(nx));
+matrix p0(ny,vector<double>(nx));
 printf("rank: %d,ny_split:%d\n", rank, ny_split); // debug
 for (int n = 0; n < nt; n++) {
     MPI_Win win;
@@ -57,7 +64,7 @@ for (int n = 0; n < nt; n++) {
             );
         }
     }
-    for (int it = 0; it < nit; it++) {  
+    for (int it = 0; it < nit; it++) {
         matrix pn = p; // deepcopy
         for (int j = 1; j < ny_split-1; j++) {
             for (int i = 1; i < nx-1; i++) { // loop order is already optimal
@@ -90,7 +97,6 @@ for (int n = 0; n < nt; n++) {
             for (int i = 0; i < nx; i++) p[ny_split-1][i] = 0;
         }
     }
-    }
     // deepcopy
     matrix un = u;
     matrix vn = v;
@@ -115,7 +121,7 @@ for (int n = 0; n < nt; n++) {
         u[j][nx-1] = 0;
         v[j][0]    = 0;
         v[j][nx-1] = 0;
-    }        
+    }
     // send u to rank + 1 (including rank = 0 and -1)
     send_to = (rank + 1) % size;
     MPI_Win_create(u[0], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
@@ -151,7 +157,16 @@ for (int n = 0; n < nt; n++) {
             v[ny_split-1][i] = 0;
         }
     }
-    }/*
+    if (rank == size-1){
+        MPI_Gather(&u0[rank*ny_split0], ny_split, MPI_DOUBLE, x, end-begin, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&v0[rank*ny_split0], ny_split, MPI_DOUBLE, x, end-begin, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&p0[rank*ny_split0], ny_split, MPI_DOUBLE, x, end-begin, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Gather(&u0[rank*ny_split], ny_split, MPI_DOUBLE, x, end-begin, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&v0[rank*ny_split], ny_split, MPI_DOUBLE, x, end-begin, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&p0[rank*ny_split], ny_split, MPI_DOUBLE, x, end-begin, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    }
+    /*
     double mean_u = 0;
     double mean_v = 0;
     double mean_p = 0;
