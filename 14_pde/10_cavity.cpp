@@ -43,7 +43,13 @@ if (rank == size-1) {
 }
 // data type for allgather
 MPI_Datatype MPI_BODY;
-MPI_Type_vector(ny_split, nx, MPI_DOUBLE, &MPI_BODY);
+int sizes = []
+int starts = []
+sizes[0] = ny_split;
+sizes[1] = nx;
+starts[0] = 0;
+starts[1] = 0;
+MPI_Type_create_subarray(2, sizes, sizes, starts, MPI_ORDER_C, MPI_DOUBLE, &MPI_BODY);
 MPI_Type_commit(&MPI_BODY);
 // np.zeros() default dtype float64 = double (in c)
 // vector defaults to zero
