@@ -159,13 +159,13 @@ for (int n = 0; n < nt; n++) {
         }
     }
     if (rank == size-1){
-        MPI_Gather(&u0[rank*ny_split0*nx], ny_split*nx, MPI_DOUBLE, &u, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Gather(&v0[rank*ny_split0*nx], ny_split*nx, MPI_DOUBLE, &v, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Gather(&p0[rank*ny_split0*nx], ny_split*nx, MPI_DOUBLE, &p, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&u, ny_split*nx, MPI_DOUBLE, &u0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&v, ny_split*nx, MPI_DOUBLE, &v0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&p, ny_split*nx, MPI_DOUBLE, &p0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Gather(&u0[rank*ny_split*nx], ny_split*nx, MPI_DOUBLE, &u, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Gather(&v0[rank*ny_split*nx], ny_split*nx, MPI_DOUBLE, &v, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Gather(&p0[rank*ny_split*nx], ny_split*nx, MPI_DOUBLE, &p, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&u, ny_split*nx, MPI_DOUBLE, &u0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&v, ny_split*nx, MPI_DOUBLE, &v0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&p, ny_split*nx, MPI_DOUBLE, &p0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     }
     if (rank == 0) {
         double mean_u = 0;
