@@ -33,11 +33,11 @@ MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 // split j for MPI
 // split j = 1 ~ ny-2 into size
 if (rank == size-1) {
-    int ny_split0 = (ny-2)/size; // nysplit for rank =/= size-1
-    int ny_split = (ny-2) - (size-1)*ny_split0;
+    ny_split0 = double(ny-2)/double(size); // nysplit for rank =/= size-1
+    ny_split = (ny-2) - (size-1)*ny_split0;
     ny_split = ny_split + 2; // include before and after elements
 } else {
-    int ny_split = (ny-2)/size;
+    ny_split = double(ny-2)/double(size);
     ny_split = ny_split + 2; // include before and after elements
 }
 // np.zeros() default dtype float64 = double (in c)
