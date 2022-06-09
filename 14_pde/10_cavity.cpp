@@ -43,10 +43,10 @@ if (rank == size-1) {
 // np.zeros() default dtype float64 = double (in c)
 // vector defaults to zero
 // store split data
-vector<double> u(ny*nx);
-vector<double> v(ny*nx);
-vector<double> p(ny*nx);
-vector<double> b(ny*nx);
+vector<double> u(ny_split*nx);
+vector<double> v(ny_split*nx);
+vector<double> p(ny_split*nx);
+vector<double> b(ny_split*nx);
 // store all data
 vector<double> u0(ny*nx);
 vector<double> v0(ny*nx);
