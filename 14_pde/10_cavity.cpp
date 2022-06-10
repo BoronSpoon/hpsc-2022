@@ -157,7 +157,7 @@ for (int n = 0; n < nt; n++) {
             u[(ny_split-1)*nx + i] = 1;
             v[(ny_split-1)*nx + i] = 0;
         }
-    }/*
+    }
     if (rank == size-1){
         MPI_Gather(&u, ny_split*nx, MPI_DOUBLE, &u0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         MPI_Gather(&v, ny_split*nx, MPI_DOUBLE, &v0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -200,7 +200,7 @@ for (int n = 0; n < nt; n++) {
         printf("v: mean:%lf, std:%lf\n", mean_v, std_v);
         printf("p: mean:%lf, std:%lf\n", mean_p, std_p);
         printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
-    }*/
+    }
 }
 //auto toc = chrono::steady_clock::now();
 //double time = chrono::duration<double>(toc - tic).count();
