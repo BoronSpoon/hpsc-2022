@@ -180,6 +180,7 @@ for (int n = 0; n < nt; n++) {
     MPI_Gatherv(&u[0], size-1, MPI_DOUBLE, &u0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&v[0], size-1, MPI_DOUBLE, &v0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&p[0], size-1, MPI_DOUBLE, &p0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(&b[0], size-1, MPI_DOUBLE, &b0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     if (rank == 0) {
         double mean_u = 0;
         double mean_v = 0;
