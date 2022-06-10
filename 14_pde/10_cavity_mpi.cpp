@@ -246,6 +246,6 @@ MPI_Win_free(&win4);
 MPI_Win_free(&win5);
 MPI_Finalize();
 clock_gettime(CLOCK_REALTIME, &toc);
-time = (toc.tv_sec - tic.tv_sec) + double(stop.tv_nsec - start.tv_nsec) / double(1000000000L);
+time = (toc.tv_sec - tic.tv_sec) + double(toc.tv_nsec - tic.tv_nsec) / double(1000000000L);
 printf("%lf s",time);
 } // close int main()
