@@ -39,7 +39,7 @@ for (int i = 1; i < size; i++) {
     if (i != size-1) {
         ny_splits[i] = double(ny-2)/double(size); // nysplit for rank =/= size-1
     } else {
-        ny_splits[i] = (ny-2) - (size-1)*ny_split0;
+        ny_splits[i] = (ny-2) - (size-1)*double(ny-2)/double(size);
     }
     ny_splits[i] = ny_splits[i] + 2; // include before and after elements
     if (i == 0) { 
