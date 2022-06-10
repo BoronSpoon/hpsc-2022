@@ -17,7 +17,6 @@ nx=ny=41, nt=500, nit=50
 - mpi: 1.01 s (time shown on intel vtune profiler)
     - mpiicpc -O3 10_cavity_mpi.cpp, mpirun -genv VT_LOGFILE_FORMAT=SINGLESTF -trace -n 4 ./a.out 
     - 1.01 s: initial
-    - 1.02 s: combined mpi fence for win2~5 to reduce mpi time -> no change
  (module: intel intel-mpi intel-itac)
 ***************************************************************************************************/
 int main(int argc, char** argv) {
