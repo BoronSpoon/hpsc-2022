@@ -8,13 +8,17 @@
 using namespace std;
 /************** Benchmark on q_core (4 cores) ****************
 nx=ny=41, nt=500, nit=50
-- python:
+- python: 1.32 s
+    - module load python
     - python 10_cavity_python.py
 - normal c++:
-    - gcc 10_cavity_openmp.cpp; ./a.out
+    - module load gcc
+    - gcc 10_cavity_cpp.cpp; ./a.out
 - openmp: 
+    - module load gcc openmp
     - gcc 10_cavity_openmp.cpp -fopenmp; ./a.out
 - mpi (-np 4): 0.19 s
+    - module load cuda openmpi
     - mpicxx 10_cavity_mpi.cpp, mpirun -np 4 ./a.out
 *************************************************************/
 int main(int argc, char** argv) {
