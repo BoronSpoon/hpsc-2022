@@ -158,9 +158,9 @@ for (int n = 0; n < nt; n++) {
             v[(ny_split-1)*nx + i] = 0;
         }
     }
-    MPI_Gather(&u, ny_split*nx, MPI_DOUBLE, &u0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gather(&v, ny_split*nx, MPI_DOUBLE, &v0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gather(&p, ny_split*nx, MPI_DOUBLE, &p0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(&u, ny_split*nx, MPI_DOUBLE, &u0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(&v, ny_split*nx, MPI_DOUBLE, &v0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(&p, ny_split*nx, MPI_DOUBLE, &p0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     if (rank == 0) {
         double mean_u = 0;
         double mean_v = 0;
