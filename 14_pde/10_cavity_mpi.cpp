@@ -196,7 +196,7 @@ for (int n = 0; n < nt; n++) {
     }
     if (rank == 0) {
         printf("n:%d,rank:%d,u[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,u[41],u[42],u[43],u[44],u[45]);
-    }/*
+    }
     MPI_Gatherv(&u[0], size-1, MPI_DOUBLE, &u0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&v[0], size-1, MPI_DOUBLE, &v0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&p[0], size-1, MPI_DOUBLE, &p0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -234,7 +234,7 @@ for (int n = 0; n < nt; n++) {
         printf("v: mean:%lf, std:%lf\n", mean_v, std_v);
         printf("p: mean:%lf, std:%lf\n", mean_p, std_p);
         printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
-    }*/
+    }
 }
 double toc = MPI_Wtime();
 double time = toc - tic;
