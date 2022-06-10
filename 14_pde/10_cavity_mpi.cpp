@@ -5,7 +5,7 @@
 #include <cmath>
 #include <mpi.h>
 using namespace std;
-/************** Benchmark on q_core (4 cores) ****************
+/************************* Benchmark on q_core (4 cores) ***********************
 nx=ny=41, nt=500, nit=50
 - python: 137 s 
     - python 10_cavity_python.py (module: python)
@@ -15,7 +15,7 @@ nx=ny=41, nt=500, nit=50
     - g++ 10_cavity_openmp.cpp -fopenmp; ./a.out (module: gcc)
 - mpi: 1.49 s
     - mpicxx 10_cavity_mpi.cpp, mpirun -np 4 ./a.out (module: gcc cuda openmpi)
-*************************************************************/
+********************************************************************************/
 int main(int argc, char** argv) {
 MPI_Init(&argc, &argv);
 MPI_Win win0;
