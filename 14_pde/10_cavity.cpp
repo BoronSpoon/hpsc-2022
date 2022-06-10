@@ -167,9 +167,9 @@ for (int n = 0; n < nt; n++) {
         }
     }
     if (rank == 0) {
-        MPI_Gather(&u, ny_split*nx, MPI_DOUBLE, &u0, ny_split*nx, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Gather(&v, ny_split*nx, MPI_DOUBLE, &v0, ny_split*nx, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Gather(&p, ny_split*nx, MPI_DOUBLE, &p0, ny_split*nx, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&u, ny_split*nx, MPI_DOUBLE, &u0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&v, ny_split*nx, MPI_DOUBLE, &v0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&p, ny_split*nx, MPI_DOUBLE, &p0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     } else {
         MPI_Gatherv(&u, ny_split*nx, MPI_DOUBLE, &u0, ny_splits, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         MPI_Gatherv(&v, ny_split*nx, MPI_DOUBLE, &v0, ny_splits, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
