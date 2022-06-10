@@ -10,9 +10,9 @@ nx=ny=41, nt=500, nit=50
 - python: 137 s
     - python 10_cavity_python.py
 - normal c++: 3.77 s
-    - g++ 10_cavity_openmp.cpp -fopenmp
+    - g++ 10_cavity.cpp; ./a.out
 - openmp: 1.61 s
-    - g++ 10_cavity_openmp.cpp -fopenmp
+    - g++ 10_cavity_openmp.cpp -fopenmp; ./a.out
 - mpi: ? s
     - mpicxx 10_cavity_mpi.cpp, mpirun -np 4 ./a.out
 *************************************************************/
@@ -29,7 +29,8 @@ int nt = 5; // debug
 int nit = 50;
 int send_to = 0;
 int ny_split = 0;
-int ny_splits[size];
+int ny_splits[size]; // length of each split u,v,p,b (the total length >= ny)
+int counts[size]; // length of each split u,v,p,b that will be sent to u0,v0,p0,b0 (the total length = ny)
 int displacements[size];
 double dx = 2 / (double(nx) - 1);
 double dy = 2 / (double(ny) - 1);
@@ -41,21 +42,24 @@ double nu = 0.02;
 // split j = 1 ~ ny-2 into size
 
 for (int i = 0; i < size; i++) {
+    counts[i] = 0;
     ny_splits[i] = 0;
     displacements[i] = 0;
     if (i == size-1) {
         ny_splits[i] = (ny-2) - (size-1)*int(double(ny-2)/double(size));
+        counts[i] = ny_splits[i];
     } else {
         ny_splits[i] = double(ny-2)/double(size);
+        counts[i] = ny_splits[i] - 2; // the last two elements are overlapping with adjacent ranks
     }
     ny_splits[i] += 2; // include before and after elements
     if (i == 0) { 
         displacements[i] = 0;
     } else {
-        displacements[i] = displacements[i-1] + ny_splits[i-1];
+        displacements[i] = displacements[i-1] + counts[i-1];
     }
 }
-ny_split = ny_splits[rank];
+ny_split = ny_splits[rank]; 
 // np.zeros() default dtype float64 = double (in c)
 // vector defaults to zero
 // store split data
@@ -174,9 +178,9 @@ for (int n = 0; n < nt; n++) {
             v[(ny_split-1)*nx + i] = 0;
         }
     }
-    MPI_Gatherv(&u[0], size-1, MPI_DOUBLE, &u0[0], ny_splits, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gatherv(&v[0], size-1, MPI_DOUBLE, &v0[0], ny_splits, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gatherv(&p[0], size-1, MPI_DOUBLE, &p0[0], ny_splits, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(&u[0], size-1, MPI_DOUBLE, &u0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(&v[0], size-1, MPI_DOUBLE, &v0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(&p[0], size-1, MPI_DOUBLE, &p0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     if (rank == 0) {
         double mean_u = 0;
         double mean_v = 0;
