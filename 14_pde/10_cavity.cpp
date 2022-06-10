@@ -15,7 +15,7 @@ MPI_Init(&argc, &argv);
 int size, rank;
 MPI_Comm_size(MPI_COMM_WORLD, &size);
 MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-//auto tic = chrono::steady_clock::now();
+auto tic = chrono::steady_clock::now();
 int nx = 41;
 int ny = 41;
 //int nt = 500;
@@ -207,10 +207,9 @@ for (int n = 0; n < nt; n++) {
         printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
     }
 }
-//auto toc = chrono::steady_clock::now();
-//double time = chrono::duration<double>(toc - tic).count();
-//printf("%lf s",time);
+auto toc = chrono::steady_clock::now();
+double time = chrono::duration<double>(toc - tic).count();
+printf("%lf s",time);
 MPI_Win_free(&win);
 MPI_Finalize();
-return 0;
 } // close int main()
