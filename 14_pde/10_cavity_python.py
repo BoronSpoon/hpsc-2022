@@ -4,8 +4,8 @@ import time
 t0 = time.time()
 nx = 41
 ny = 41
-#nt = 500
-nt = 5 # debug
+nt = 500
+#nt = 5 # debug
 nit = 50
 dx = 2 / (nx - 1)
 dy = 2 / (ny - 1)
