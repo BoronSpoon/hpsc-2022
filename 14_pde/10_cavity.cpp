@@ -21,6 +21,7 @@ int nit = 50;
 int send_to = 0;
 int ny_split = 0;
 int ny_split0 = 0;
+int displacement = 0;
 double dx = 2 / (double(nx) - 1);
 double dy = 2 / (double(ny) - 1);
 double dt = 0.01;
@@ -39,6 +40,9 @@ if (rank == size-1) {
 } else {
     ny_split = double(ny-2)/double(size);
     ny_split = ny_split + 2; // include before and after elements
+}
+for (int i = 1; i < rank; i++) {
+    displacement += ny_split;
 }
 // np.zeros() default dtype float64 = double (in c)
 // vector defaults to zero
@@ -158,9 +162,9 @@ for (int n = 0; n < nt; n++) {
             v[(ny_split-1)*nx + i] = 0;
         }
     }
-    MPI_Gatherv(&u, ny_split*nx, MPI_DOUBLE, &u0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gatherv(&v, ny_split*nx, MPI_DOUBLE, &v0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gatherv(&p, ny_split*nx, MPI_DOUBLE, &p0, ny_split*nx, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(&u, ny_split*nx, MPI_DOUBLE, &u0, ny_split*nx, displacement, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(&v, ny_split*nx, MPI_DOUBLE, &v0, ny_split*nx, displacement, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(&p, ny_split*nx, MPI_DOUBLE, &p0, ny_split*nx, displacement, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     if (rank == 0) {
         double mean_u = 0;
         double mean_v = 0;
