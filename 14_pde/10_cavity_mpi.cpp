@@ -30,8 +30,8 @@ MPI_Comm_size(MPI_COMM_WORLD, &size);
 MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 int nx = 41;
 int ny = 41;
-//int nt = 500;
-int nt = 5; // debug
+int nt = 500;
+//int nt = 5; // debug
 int nit = 50;
 int send_to = 0;
 int ny_split = 0;
@@ -196,7 +196,7 @@ for (int n = 0; n < nt; n++) {
     MPI_Gatherv(&u[0], count, MPI_DOUBLE, &u0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&v[0], count, MPI_DOUBLE, &v0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&p[0], count, MPI_DOUBLE, &p0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gatherv(&b[0], count, MPI_DOUBLE, &b0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(&b[0], count, MPI_DOUBLE, &b0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);/*
     if (rank == 0) {
         double mean_u = 0;
         double mean_v = 0;
@@ -230,7 +230,7 @@ for (int n = 0; n < nt; n++) {
         printf("v: mean:%lf, std:%lf\n", mean_v, std_v);
         printf("p: mean:%lf, std:%lf\n", mean_p, std_p);
         printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
-    }
+    }*/
 }
 double toc = MPI_Wtime();
 double time = toc - tic;
