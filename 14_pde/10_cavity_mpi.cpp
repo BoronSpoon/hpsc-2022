@@ -4,6 +4,7 @@
 #include <vector>
 #include <cmath>
 #include <mpi.h>
+#include <time.h>
 using namespace std;
 /************************************ Benchmark on q_core (4 cores) *******************************
 nx=ny=41, nt=500, nit=50
@@ -13,11 +14,16 @@ nx=ny=41, nt=500, nit=50
     - g++ 10_cavity.cpp; ./a.out (module: gcc)
 - openmp: 1.61 s
     - g++ 10_cavity_openmp.cpp -fopenmp; ./a.out (module: gcc)
-- mpi: 0.246 s
+- mpi: 
     - mpiicpc -O3 10_cavity_mpi.cpp, mpirun -genv VT_LOGFILE_FORMAT=SINGLESTF -trace -n 4 ./a.out 
+    - 1.01 s: initial
+    - 
  (module: intel intel-mpi intel-itac)
 ***************************************************************************************************/
 int main(int argc, char** argv) {
+struct timespec tic, toc;
+double time = 0;
+clock_gettime(CLOCK_REALTIME, &tic);
 MPI_Init(&argc, &argv);
 MPI_Win win0;
 MPI_Win win1;
@@ -25,7 +31,6 @@ MPI_Win win2;
 MPI_Win win3;
 MPI_Win win4;
 MPI_Win win5;
-double tic = MPI_Wtime();
 int size, rank;
 MPI_Comm_size(MPI_COMM_WORLD, &size);
 MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -233,9 +238,6 @@ for (int n = 0; n < nt; n++) {
         printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
     }*/
 }
-double toc = MPI_Wtime();
-double time = toc - tic;
-printf("%lf s",time);
 MPI_Win_free(&win0);
 MPI_Win_free(&win1);
 MPI_Win_free(&win2);
@@ -243,4 +245,7 @@ MPI_Win_free(&win3);
 MPI_Win_free(&win4);
 MPI_Win_free(&win5);
 MPI_Finalize();
+clock_gettime(CLOCK_REALTIME, &toc);
+time = (toc.tv_sec - tic.tv_sec) + double(stop.tv_nsec - start.tv_nsec) / double(1000000000L);
+printf("%lf s",time);
 } // close int main()
