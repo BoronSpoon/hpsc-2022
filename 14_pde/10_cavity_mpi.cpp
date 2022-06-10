@@ -37,16 +37,13 @@ int send_to = 0;
 int ny_split = 0;
 int count = 0;
 int ny_splits[size]; // ny split amongst ranks
-int counts[size]; // number of elements in u,v,p,b that will be sent to u0,v0,p0,b0 (total = nx*ny)
+int counts[size]; // number of elements in u,v,p,b that will be gathered to u0,v0,p0,b0 (total = nx*ny)
 int displacements[size]; // displacements of u,v,p,v of each rank in u0,v0,p0,b0
 double dx = 2 / (double(nx) - 1);
 double dy = 2 / (double(ny) - 1);
 double dt = 0.01;
 double rho = 1;
 double nu = 0.02;
-
-// split j for MPI
-// split j = 1 ~ ny-2 into size
 
 for (int i = 0; i < size; i++) {
     counts[i] = 0;
@@ -196,21 +193,11 @@ for (int n = 0; n < nt; n++) {
             v[(ny_split-1)*nx + i] = 0;
         }
     }
-    if (rank == 0) {
-        printf("n:%d,rank:%d,u[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,u[41],u[42],u[43],u[44],u[45]);
-        //printf("n:%d,rank:%d,v[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,v[41],v[42],v[43],v[44],v[45]);
-        //printf("n:%d,rank:%d,p[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,p[41],p[42],p[43],p[44],p[45]);
-        //printf("n:%d,rank:%d,b[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,b[41],b[42],b[43],b[44],b[45]);
-    }
     MPI_Gatherv(&u[0], count, MPI_DOUBLE, &u0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&v[0], count, MPI_DOUBLE, &v0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&p[0], count, MPI_DOUBLE, &p0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&b[0], count, MPI_DOUBLE, &b0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     if (rank == 0) {
-        printf("n:%d,rank:%d,u0[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,u0[41],u0[42],u0[43],u0[44],u0[45]);
-        //printf("n:%d,rank:%d,v0[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,v0[41],v0[42],v0[43],v0[44],v0[45]);
-        //printf("n:%d,rank:%d,p0[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,p0[41],p0[42],p0[43],p0[44],p0[45]);
-        //printf("n:%d,rank:%d,b0[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,b0[41],b0[42],b0[43],b0[44],b0[45]);
         double mean_u = 0;
         double mean_v = 0;
         double mean_p = 0;
