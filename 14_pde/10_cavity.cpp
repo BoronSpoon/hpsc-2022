@@ -24,7 +24,7 @@ int nit = 50;
 int send_to = 0;
 int ny_split = 0;
 int ny_splits[size];
-int displacements[size+1];
+int displacements[size];
 double dx = 2 / (double(nx) - 1);
 double dy = 2 / (double(ny) - 1);
 double dt = 0.01;
@@ -34,17 +34,20 @@ double nu = 0.02;
 // split j for MPI
 // split j = 1 ~ ny-2 into size
 
-displacements[0] = 0;
 for (int i = 0; i < size; i++) {
     ny_splits[i] = 0;
-    displacements[i+1] = 0;
+    displacements[i] = 0;
     if (i == size-1) {
         ny_splits[i] = (ny-2) - (size-1)*int(double(ny-2)/double(size));
     } else {
         ny_splits[i] = double(ny-2)/double(size);
     }
     ny_splits[i] += 2; // include before and after elements
-    displacements[i+1] = displacements[i] + ny_splits[i];
+    if (i == 0) { 
+        displacements[i] = 0;
+    } else {
+        displacements[i] = displacements[i-1] + ny_splits[i-1];
+    }
 }
 ny_split = ny_splits[rank];
 // np.zeros() default dtype float64 = double (in c)
