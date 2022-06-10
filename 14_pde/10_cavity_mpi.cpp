@@ -177,7 +177,7 @@ for (int n = 0; n < nt; n++) {
     MPI_Win_fence(0, win5);
     MPI_Put(&v[1*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win5);
     MPI_Win_fence(0, win5);
-    for (int j = 1; j < ny_split-1; j++) {
+    for (int j = 0; j < ny_split; j++) {
         u[j*nx + 0]    = 0;
         u[j*nx + nx-1] = 0;
         v[j*nx + 0]    = 0;
