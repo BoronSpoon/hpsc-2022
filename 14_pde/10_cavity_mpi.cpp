@@ -36,8 +36,8 @@ int nit = 50;
 int send_to = 0;
 int ny_split = 0;
 int count = 0;
-int ny_splits[size]; // length of each split u,v,p,b (the total length >= ny)
-int counts[size]; // length of each split u,v,p,b that will be sent to u0,v0,p0,b0 (the total length = ny)
+int ny_splits[size]; // ny split amongst ranks
+int counts[size]; // number of elements in u,v,p,b that will be sent to u0,v0,p0,b0 (total = nx*ny)
 int displacements[size]; // displacements of u,v,p,v of each rank in u0,v0,p0,b0
 double dx = 2 / (double(nx) - 1);
 double dy = 2 / (double(ny) - 1);
@@ -54,10 +54,10 @@ for (int i = 0; i < size; i++) {
     displacements[i] = 0;
     if (i == size-1) {
         ny_splits[i] = (ny-2) - (size-1)*int(double(ny-2)/double(size)) + 2; // include before and after elements
-        counts[i] = ny_splits[i];
+        counts[i] = (ny_splits[i])*nx;
     } else {
         ny_splits[i] = double(ny-2)/double(size) + 2; // include before and after elements
-        counts[i] = ny_splits[i] - 2; // the last two elements are overlapping with adjacent ranks
+        counts[i] = (ny_splits[i] - 2)*nx; // the last two elements are overlapping with adjacent ranks
     }
     if (i == 0) { 
         displacements[i] = 0;
