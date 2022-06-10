@@ -177,7 +177,6 @@ for (int n = 0; n < nt; n++) {
     MPI_Gatherv(&u[0], size-1, MPI_DOUBLE, &u0[0], ny_splits, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&v[0], size-1, MPI_DOUBLE, &v0[0], ny_splits, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&p[0], size-1, MPI_DOUBLE, &p0[0], ny_splits, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    /*
     if (rank == 0) {
         double mean_u = 0;
         double mean_v = 0;
@@ -211,7 +210,7 @@ for (int n = 0; n < nt; n++) {
         printf("v: mean:%lf, std:%lf\n", mean_v, std_v);
         printf("p: mean:%lf, std:%lf\n", mean_p, std_p);
         printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
-    }*/
+    }
 }
 double toc = MPI_Wtime();
 double time = toc - tic;
