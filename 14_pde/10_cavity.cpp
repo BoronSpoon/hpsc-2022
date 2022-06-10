@@ -210,6 +210,6 @@ for (int n = 0; n < nt; n++) {
 //auto toc = chrono::steady_clock::now();
 //double time = chrono::duration<double>(toc - tic).count();
 //printf("%lf s",time);
-//MPI_Win_free(&win);
+MPI_Win_free(&win);
 MPI_Finalize();
 } // close int main()
