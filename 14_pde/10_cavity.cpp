@@ -132,7 +132,7 @@ for (int n = 0; n < nt; n++) {
     // send u to rank - 1 (including rank = 0 and -1)
     send_to = (rank - 1 + size) % size;
     MPI_Win_create(&u[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
-    vMPI_Win_fence(0, win);
+    MPI_Win_fence(0, win);
     MPI_Put(&u[1*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
     MPI_Win_fence(0, win);
     // send v to rank + 1 (including rank = 0 and -1)
