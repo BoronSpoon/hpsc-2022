@@ -89,7 +89,7 @@ for (int n = 0; n < nt; n++) {
             );
         }
     }
-    printf("n:%d,rank:%d,b[0:5]=%lf,%lf,%lf,%lf,%lf\n",n,rank,b[0],b[1],b[2],b[3],b[4])
+    printf("n:%d,rank:%d,b[0:5]=%lf,%lf,%lf,%lf,%lf\n",n,rank,b[0],b[1],b[2],b[3],b[4]);
     for (int it = 0; it < nit; it++) {
         vector<double> pn = p; // deepcopy
         for (int j = 1; j < ny_split-1; j++) {
