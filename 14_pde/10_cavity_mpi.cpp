@@ -35,6 +35,7 @@ int nt = 5; // debug
 int nit = 50;
 int send_to = 0;
 int ny_split = 0;
+int count = 0;
 int ny_splits[size]; // length of each split u,v,p,b (the total length >= ny)
 int counts[size]; // length of each split u,v,p,b that will be sent to u0,v0,p0,b0 (the total length = ny)
 int displacements[size]; // displacements of u,v,p,v of each rank in u0,v0,p0,b0
@@ -64,6 +65,7 @@ for (int i = 0; i < size; i++) {
         displacements[i] = displacements[i-1] + counts[i-1];
     }
 }
+count = counts[rank];
 ny_split = ny_splits[rank]; 
 // np.zeros() default dtype float64 = double (in c)
 // vector defaults to zero
@@ -200,10 +202,10 @@ for (int n = 0; n < nt; n++) {
         //printf("n:%d,rank:%d,p[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,p[41],p[42],p[43],p[44],p[45]);
         //printf("n:%d,rank:%d,b[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,b[41],b[42],b[43],b[44],b[45]);
     }
-    MPI_Gatherv(&u[0], size-1, MPI_DOUBLE, &u0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gatherv(&v[0], size-1, MPI_DOUBLE, &v0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gatherv(&p[0], size-1, MPI_DOUBLE, &p0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gatherv(&b[0], size-1, MPI_DOUBLE, &b0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(&u[0], count, MPI_DOUBLE, &u0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(&v[0], count, MPI_DOUBLE, &v0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(&p[0], count, MPI_DOUBLE, &p0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(&b[0], count, MPI_DOUBLE, &b0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     if (rank == 0) {
         printf("n:%d,rank:%d,u0[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,u0[41],u0[42],u0[43],u0[44],u0[45]);
         //printf("n:%d,rank:%d,v0[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,v0[41],v0[42],v0[43],v0[44],v0[45]);
