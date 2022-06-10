@@ -89,7 +89,6 @@ for (int n = 0; n < nt; n++) {
             );
         }
     }
-    printf("n:%d,rank:%d,b[0:5]=%lf,%lf,%lf,%lf,%lf\n",n,rank,b[0],b[1],b[2],b[3],b[4]);
     for (int it = 0; it < nit; it++) {
         vector<double> pn = p; // deepcopy
         for (int j = 1; j < ny_split-1; j++) {
@@ -195,6 +194,7 @@ for (int n = 0; n < nt; n++) {
             v[(ny_split-1)*nx + i] = 0;
         }
     }
+    printf("n:%d,rank:%d,b[41:46]=%lf,%lf,%lf,%lf,%lf\n",n,rank,b[41],b[42],b[43],b[44],b[45]);
     MPI_Gatherv(&u[0], size-1, MPI_DOUBLE, &u0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&v[0], size-1, MPI_DOUBLE, &v0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&p[0], size-1, MPI_DOUBLE, &p0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);

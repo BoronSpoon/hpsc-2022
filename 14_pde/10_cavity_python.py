@@ -4,8 +4,8 @@ import time
 t0 = time.time()
 nx = 41
 ny = 41
-nt = 500
-#nt = 5 # debug
+#nt = 500
+nt = 5 # debug
 nit = 50
 dx = 2 / (nx - 1)
 dy = 2 / (ny - 1)
@@ -29,7 +29,6 @@ for n in range(nt):
                     ((u[j, i+1] - u[j, i-1]) / (2 * dx) + (v[j+1, i] - v[j-1, i]) / (2 * dy)) -\
                     ((u[j, i+1] - u[j, i-1]) / (2 * dx))**2 - 2 * ((u[j+1, i] - u[j-1, i]) / (2 * dy) *\
                      (v[j, i+1] - v[j, i-1]) / (2 * dx)) - ((v[j+1, i] - v[j-1, i]) / (2 * dy))**2)
-    print(f"N={n}, b={b[:5]}")
     for it in range(nit):
         pn = p.copy()
         for j in range(1, ny-1):
@@ -64,6 +63,7 @@ for n in range(nt):
     v[-1, :] = 0
     v[:, 0]  = 0
     v[:, -1] = 0
+    print(f"N={n}, u={u[:5,1]}")
     #print(f"n: {n}")
     #print(f"u: mean:{np.mean(u):.6f}, std:{np.std(u):.6f}")
     #print(f"v: mean:{np.mean(v):.6f}, std:{np.std(v):.6f}")
