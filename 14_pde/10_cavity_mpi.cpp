@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <vector>
 #include <cmath>
-#include <chrono>
 #include <mpi.h>
 using namespace std;
 /************** Benchmark on q_core (4 cores) ****************
@@ -14,19 +13,19 @@ nx=ny=41, nt=500, nit=50
     - g++ 10_cavity_openmp.cpp -fopenmp
 - openmp: 1.61 s
     - g++ 10_cavity_openmp.cpp -fopenmp
-- mpi (-np 4): 0.19 s
+- mpi (-np 4): ? s
     - mpicxx 10_cavity_mpi.cpp, mpirun -np 4 ./a.out
 *************************************************************/
 int main(int argc, char** argv) {
 MPI_Init(&argc, &argv);
+double tic = MPI_Wtime();
 int size, rank;
 MPI_Comm_size(MPI_COMM_WORLD, &size);
 MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-auto tic = chrono::steady_clock::now();
 int nx = 41;
 int ny = 41;
-int nt = 500;
-//int nt = 5; // debug
+//int nt = 500;
+int nt = 5; // debug
 int nit = 50;
 int send_to = 0;
 int ny_split = 0;
@@ -214,8 +213,8 @@ for (int n = 0; n < nt; n++) {
         printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
     }*/
 }
-auto toc = chrono::steady_clock::now();
-double time = chrono::duration<double>(toc - tic).count();
+double toc = MPI_Wtime();
+double time = toc - tic;
 printf("%lf s",time);
 MPI_Win_free(&win);
 MPI_Finalize();
