@@ -196,6 +196,9 @@ for (int n = 0; n < nt; n++) {
     }
     if (rank == 0) {
         printf("n:%d,rank:%d,u[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,u[41],u[42],u[43],u[44],u[45]);
+        printf("n:%d,rank:%d,v[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,v[41],v[42],v[43],v[44],v[45]);
+        printf("n:%d,rank:%d,p[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,p[41],p[42],p[43],p[44],p[45]);
+        printf("n:%d,rank:%d,b[41:46]=%.8e,%.8e,%.8e,%.8e,%.8e\n",n,rank,b[41],b[42],b[43],b[44],b[45]);
     }
     MPI_Gatherv(&u[0], size-1, MPI_DOUBLE, &u0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&v[0], size-1, MPI_DOUBLE, &v0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
