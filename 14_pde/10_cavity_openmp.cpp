@@ -6,10 +6,6 @@
 #include <chrono>
 using namespace std;
 typedef vector<vector<double>> matrix;
-// python: 
-// normal cpp: 
-// openmp: 
-// mpi: 
 int main() {
 auto tic = chrono::steady_clock::now();
 int nx = 41;

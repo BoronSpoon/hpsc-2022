@@ -8,11 +8,12 @@
 using namespace std;
 /************** Benchmark on q_core (4 cores) ****************
 nx=ny=41, nt=500, nit=50
-- python:
+- python: 1.35 s
     - python 10_cavity_python.py
-- normal c++: 
-- openmp: 
-    - gcc 10_cavity_openmp.cpp -fopenmp
+- normal c++: 3.77 s
+    - g++ 10_cavity_openmp.cpp -fopenmp
+- openmp: 1.61 s
+    - g++ 10_cavity_openmp.cpp -fopenmp
 - mpi (-np 4): 0.19 s
     - mpicxx 10_cavity_mpi.cpp, mpirun -np 4 ./a.out
 *************************************************************/
@@ -177,7 +178,7 @@ for (int n = 0; n < nt; n++) {
     MPI_Gatherv(&u[0], size-1, MPI_DOUBLE, &u0[0], ny_splits, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&v[0], size-1, MPI_DOUBLE, &v0[0], ny_splits, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&p[0], size-1, MPI_DOUBLE, &p0[0], ny_splits, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-
+    /*
     if (rank == 0) {
         double mean_u = 0;
         double mean_v = 0;
@@ -211,7 +212,7 @@ for (int n = 0; n < nt; n++) {
         printf("v: mean:%lf, std:%lf\n", mean_v, std_v);
         printf("p: mean:%lf, std:%lf\n", mean_p, std_p);
         printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
-    }
+    }*/
 }
 auto toc = chrono::steady_clock::now();
 double time = chrono::duration<double>(toc - tic).count();
