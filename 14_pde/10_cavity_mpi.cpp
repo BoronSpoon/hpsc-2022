@@ -100,10 +100,6 @@ for (int n = 0; n < nt; n++) {
                 ) / (2 * (pow(dx, 2) + pow(dy, 2)));
             }
         }
-        for (int j = 1; j < ny_split-1; j++) {
-            p[j*nx + nx-1] = p[j*nx + nx-2];
-            p[j*nx + 0] = p[j*nx + 1];
-        }
         // send p to rank + 1 (including rank = 0 and -1)
         send_to = (rank + 1) % size;
         if (n == 0 && it == 0) {
@@ -120,6 +116,10 @@ for (int n = 0; n < nt; n++) {
         MPI_Win_fence(0, win1);
         MPI_Put(&p[1*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win1);
         MPI_Win_fence(0, win1);
+        for (int j = 0; j < ny_split; j++) {
+            p[j*nx + nx-1] = p[j*nx + nx-2];
+            p[j*nx + 0] = p[j*nx + 1];
+        }
         if (rank == 0){ // fix values for rank = 0
             for (int i = 0; i < nx; i++) p[0*nx + i] = p[1*nx + i];
         } else if (rank == size-1){ // fix values for rank = -1
@@ -144,12 +144,6 @@ for (int n = 0; n < nt; n++) {
                 + nu * dt / pow(dx, 2) * (vn[j*nx + i+1] - 2 * vn[j*nx + i] + vn[j*nx + i-1])
                 + nu * dt / pow(dy, 2) * (vn[(j+1)*nx + i] - 2 * vn[j*nx + i] + vn[(j-1)*nx + i]);
         }
-    }
-    for (int j = 1; j < ny_split-1; j++) {
-        u[j*nx + 0]    = 0;
-        u[j*nx + nx-1] = 0;
-        v[j*nx + 0]    = 0;
-        v[j*nx + nx-1] = 0;
     }
     // send u to rank + 1 (including rank = 0 and -1)
     send_to = (rank + 1) % size;
@@ -183,6 +177,12 @@ for (int n = 0; n < nt; n++) {
     MPI_Win_fence(0, win5);
     MPI_Put(&v[1*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win5);
     MPI_Win_fence(0, win5);
+    for (int j = 1; j < ny_split-1; j++) {
+        u[j*nx + 0]    = 0;
+        u[j*nx + nx-1] = 0;
+        v[j*nx + 0]    = 0;
+        v[j*nx + nx-1] = 0;
+    }
     if (rank == 0){
         for (int i = 0; i < nx; i++) {
             u[0*nx + i] = 0;
