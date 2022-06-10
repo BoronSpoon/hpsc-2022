@@ -29,6 +29,7 @@ for n in range(nt):
                     ((u[j, i+1] - u[j, i-1]) / (2 * dx) + (v[j+1, i] - v[j-1, i]) / (2 * dy)) -\
                     ((u[j, i+1] - u[j, i-1]) / (2 * dx))**2 - 2 * ((u[j+1, i] - u[j-1, i]) / (2 * dy) *\
                      (v[j, i+1] - v[j, i-1]) / (2 * dx)) - ((v[j+1, i] - v[j-1, i]) / (2 * dy))**2)
+    print(f"N={n}, b={b[:5]}")
     for it in range(nit):
         pn = p.copy()
         for j in range(1, ny-1):

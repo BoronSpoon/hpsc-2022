@@ -37,7 +37,7 @@ int send_to = 0;
 int ny_split = 0;
 int ny_splits[size]; // length of each split u,v,p,b (the total length >= ny)
 int counts[size]; // length of each split u,v,p,b that will be sent to u0,v0,p0,b0 (the total length = ny)
-int displacements[size];
+int displacements[size]; // displacements of u,v,p,v of each rank in u0,v0,p0,b0
 double dx = 2 / (double(nx) - 1);
 double dy = 2 / (double(ny) - 1);
 double dt = 0.01;
@@ -89,6 +89,7 @@ for (int n = 0; n < nt; n++) {
             );
         }
     }
+    printf("n:%d,rank:%d,b[0:5]=%lf,%lf,%lf,%lf,%lf\n",n,rank,b[0],b[1],b[2],b[3],b[4])
     for (int it = 0; it < nit; it++) {
         vector<double> pn = p; // deepcopy
         for (int j = 1; j < ny_split-1; j++) {
