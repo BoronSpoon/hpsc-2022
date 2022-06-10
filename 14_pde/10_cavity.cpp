@@ -37,10 +37,10 @@ double nu = 0.02;
 for (int i = 0; i < size; i++) {
     ny_splits[i] = 0;
     displacements[i] = 0;
-    if (i != size-1) {
-        ny_splits[i] = double(ny-2)/double(size); // nysplit for rank =/= size-1
+    if (i == size-1) {
+        ny_splits[i] = (ny-2) - double(size-1)*double(ny-2)/double(size);
     } else {
-        ny_splits[i] = (ny-2) - (size-1)*double(ny-2)/double(size);
+        ny_splits[i] = double(ny-2)/double(size);
     }
     ny_splits[i] = ny_splits[i] + 2; // include before and after elements
     if (i == 0) { 
