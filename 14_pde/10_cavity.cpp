@@ -53,7 +53,7 @@ vector<double> v0(ny*nx);
 vector<double> p0(ny*nx);
 vector<double> b0(ny*nx);
 printf("rank: %d,ny_split:%d\n", rank, ny_split); // debug
-//MPI_Win win;
+MPI_Win win;
 for (int n = 0; n < nt; n++) {
     for (int j = 1; j < ny_split-1; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
