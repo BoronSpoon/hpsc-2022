@@ -18,6 +18,12 @@ nx=ny=41, nt=500, nit=50
 *************************************************************/
 int main(int argc, char** argv) {
 MPI_Init(&argc, &argv);
+MPI_Win win0;
+MPI_Win win1;
+MPI_Win win2;
+MPI_Win win3;
+MPI_Win win4;
+MPI_Win win5;
 double tic = MPI_Wtime();
 int size, rank;
 MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -100,20 +106,20 @@ for (int n = 0; n < nt; n++) {
         }
         // send p to rank + 1 (including rank = 0 and -1)
         send_to = (rank + 1) % size;
-        MPI_Win win;
-        MPI_Win_create(&p[0*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
-        MPI_Win_fence(0, win);
-        MPI_Put(&p[(ny_split-2)*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
-        MPI_Win_fence(0, win);
-        MPI_Win_free(&win);
+        if (n == 0 && it == 0) {
+            MPI_Win_create(&p[0*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win0);
+        }
+        MPI_Win_fence(0, win0);
+        MPI_Put(&p[(ny_split-2)*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win0);
+        MPI_Win_fence(0, win0);
         // send p to rank - 1 (including rank = 0 and -1)
         send_to = (rank - 1 + size) % size;
-        MPI_Win win;
-        MPI_Win_create(&p[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
-        MPI_Win_fence(0, win);
-        MPI_Put(&p[1*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
-        MPI_Win_fence(0, win);
-        MPI_Win_free(&win);
+        if (n == 0 && it == 0) {
+            MPI_Win_create(&p[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win1);
+        }
+        MPI_Win_fence(0, win1);
+        MPI_Put(&p[1*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win1);
+        MPI_Win_fence(0, win1);
         if (rank == 0){ // fix values for rank = 0
             for (int i = 0; i < nx; i++) p[0*nx + i] = p[1*nx + i];
         } else if (rank == size-1){ // fix values for rank = -1
@@ -147,36 +153,36 @@ for (int n = 0; n < nt; n++) {
     }
     // send u to rank + 1 (including rank = 0 and -1)
     send_to = (rank + 1) % size;
-    MPI_Win win;
-    MPI_Win_create(&u[0*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
-    MPI_Win_fence(0, win);
-    MPI_Put(&u[(ny_split-2)*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
-    MPI_Win_fence(0, win);
-    MPI_Win_free(&win);
+    if (n == 0) {
+        MPI_Win_create(&u[0*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win2);
+    }
+    MPI_Win_fence(0, win2);
+    MPI_Put(&u[(ny_split-2)*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win2);
+    MPI_Win_fence(0, win2);
     // send u to rank - 1 (including rank = 0 and -1)
     send_to = (rank - 1 + size) % size;
-    MPI_Win win;
-    MPI_Win_create(&u[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
-    MPI_Win_fence(0, win);
-    MPI_Put(&u[1*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
-    MPI_Win_fence(0, win);
-    MPI_Win_free(&win);
+    if (n == 0) {
+        MPI_Win_create(&u[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win3);
+    }
+    MPI_Win_fence(0, win3);
+    MPI_Put(&u[1*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win3);
+    MPI_Win_fence(0, win3);
     // send v to rank + 1 (including rank = 0 and -1)
     send_to = (rank + 1) % size;
-    MPI_Win win;
-    MPI_Win_create(&v[0*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
-    MPI_Win_fence(0, win);
-    MPI_Put(&v[(ny_split-2)*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
-    MPI_Win_fence(0, win);
-    MPI_Win_free(&win);
+    if (n == 0) {
+        MPI_Win_create(&v[0*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win4);
+    }
+    MPI_Win_fence(0, win4);
+    MPI_Put(&v[(ny_split-2)*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win4);
+    MPI_Win_fence(0, win4);
     // send v to rank - 1 (including rank = 0 and -1)
     send_to = (rank - 1 + size) % size;
-    MPI_Win win;
-    MPI_Win_create(&v[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
-    MPI_Win_fence(0, win);
-    MPI_Put(&v[1*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
-    MPI_Win_fence(0, win);
-    MPI_Win_free(&win);
+    if (n == 0) {
+        MPI_Win_create(&v[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win5);
+    }
+    MPI_Win_fence(0, win5);
+    MPI_Put(&v[1*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win5);
+    MPI_Win_fence(0, win5);
     if (rank == 0){
         for (int i = 0; i < nx; i++) {
             u[0*nx + i] = 0;
@@ -230,5 +236,11 @@ for (int n = 0; n < nt; n++) {
 double toc = MPI_Wtime();
 double time = toc - tic;
 printf("%lf s",time);
+MPI_Win_free(&win0);
+MPI_Win_free(&win1);
+MPI_Win_free(&win2);
+MPI_Win_free(&win3);
+MPI_Win_free(&win4);
+MPI_Win_free(&win5);
 MPI_Finalize();
 } // close int main()
