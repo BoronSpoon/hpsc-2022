@@ -111,10 +111,10 @@ for (int n = 0; n < nt; n++) {
             MPI_Win_create(&p[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win1);
         }
         MPI_Win_fence(0, win0);
-        MPI_Win_fence(0, win1);
         MPI_Put(&p[(ny_split-2)*nx], nx, MPI_DOUBLE, (rank + 1) % size, 0, nx, MPI_DOUBLE, win0); // send p to rank + 1 (including rank = 0 and -1)
-        MPI_Put(&p[1*nx], nx, MPI_DOUBLE, (rank - 1 + size) % size, 0, nx, MPI_DOUBLE, win1); // send p to rank - 1 (including rank = 0 and -1)
         MPI_Win_fence(0, win0);
+        MPI_Win_fence(0, win1);
+        MPI_Put(&p[1*nx], nx, MPI_DOUBLE, (rank - 1 + size) % size, 0, nx, MPI_DOUBLE, win1); // send p to rank - 1 (including rank = 0 and -1)
         MPI_Win_fence(0, win1);
         for (int j = 0; j < ny_split; j++) {
             p[j*nx + nx-1] = p[j*nx + nx-2];
@@ -152,16 +152,16 @@ for (int n = 0; n < nt; n++) {
         MPI_Win_create(&v[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win5);
     }
     MPI_Win_fence(0, win2);
-    MPI_Win_fence(0, win3);
-    MPI_Win_fence(0, win4);
-    MPI_Win_fence(0, win5);
     MPI_Put(&u[(ny_split-2)*nx], nx, MPI_DOUBLE, (rank + 1) % size, 0, nx, MPI_DOUBLE, win2); // send u to rank + 1 (including rank = 0 and -1)
-    MPI_Put(&u[1*nx], nx, MPI_DOUBLE, (rank - 1 + size) % size, 0, nx, MPI_DOUBLE, win3); // send u to rank - 1 (including rank = 0 and -1)
-    MPI_Put(&v[(ny_split-2)*nx], nx, MPI_DOUBLE, (rank + 1) % size, 0, nx, MPI_DOUBLE, win4);  // send v to rank + 1 (including rank = 0 and -1)
-    MPI_Put(&v[1*nx], nx, MPI_DOUBLE, (rank - 1 + size) % size, 0, nx, MPI_DOUBLE, win5); // send v to rank - 1 (including rank = 0 and -1)
     MPI_Win_fence(0, win2);
     MPI_Win_fence(0, win3);
+    MPI_Put(&u[1*nx], nx, MPI_DOUBLE, (rank - 1 + size) % size, 0, nx, MPI_DOUBLE, win3); // send u to rank - 1 (including rank = 0 and -1)
+    MPI_Win_fence(0, win3);
     MPI_Win_fence(0, win4);
+    MPI_Put(&v[(ny_split-2)*nx], nx, MPI_DOUBLE, (rank + 1) % size, 0, nx, MPI_DOUBLE, win4);  // send v to rank + 1 (including rank = 0 and -1)
+    MPI_Win_fence(0, win4);
+    MPI_Win_fence(0, win5);
+    MPI_Put(&v[1*nx], nx, MPI_DOUBLE, (rank - 1 + size) % size, 0, nx, MPI_DOUBLE, win5); // send v to rank - 1 (including rank = 0 and -1)
     MPI_Win_fence(0, win5);
     for (int j = 0; j < ny_split; j++) {
         u[j*nx + 0]    = 0;
