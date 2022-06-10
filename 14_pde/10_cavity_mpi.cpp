@@ -78,7 +78,7 @@ vector<double> v0(ny*nx);
 vector<double> p0(ny*nx);
 vector<double> b0(ny*nx);
 printf("rank: %d,ny_split:%d,count:%d,displacement:%d\n", rank, ny_split, counts[rank], displacements[rank]); // debug
-for (int n = 0; n < nt; n++) {/*
+for (int n = 0; n < nt; n++) {
     for (int j = 1; j < ny_split-1; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
             b[j*nx + i] = rho * (
@@ -125,7 +125,7 @@ for (int n = 0; n < nt; n++) {/*
         } else if (rank == size-1){ // fix values for rank = -1
             for (int i = 0; i < nx; i++) p[(ny_split-1)*nx + i] = 0;
         }
-    }*/
+    }
     // deepcopy
     vector<double> un = u;
     vector<double> vn = v;
