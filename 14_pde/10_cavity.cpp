@@ -12,6 +12,9 @@ using namespace std;
 // mpi: 
 int main(int argc, char** argv) {
 MPI_Init(&argc, &argv);
+int size, rank;
+MPI_Comm_size(MPI_COMM_WORLD, &size);
+MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 //auto tic = chrono::steady_clock::now();
 int nx = 41;
 int ny = 41;
@@ -28,9 +31,6 @@ double dy = 2 / (double(ny) - 1);
 double dt = 0.01;
 double rho = 1;
 double nu = 0.02;
-int size, rank;
-MPI_Comm_size(MPI_COMM_WORLD, &size);
-MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 // split j for MPI
 // split j = 1 ~ ny-2 into size
