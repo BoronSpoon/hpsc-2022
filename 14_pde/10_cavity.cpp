@@ -45,7 +45,7 @@ for (int i = 1; i < size; i++) {
     if (i == 0) { 
         displacements[0] = 0;
     } else {
-        displacements[i] = displacements[i-1] + ny_split[i-1];
+        displacements[i] = displacements[i-1] + ny_splits[i-1];
     }
 }
 ny_split = ny_splits[rank];
