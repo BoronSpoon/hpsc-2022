@@ -82,16 +82,16 @@ for (int n = 0; n < nt; n++) {
         }
         // send p to rank + 1 (including rank = 0 and -1)
         send_to = (rank + 1) % size;
-        //MPI_Win_create(&p[0*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
-        //MPI_Win_fence(0, win);
-        //MPI_Put(&p[ny_split-2*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
-        //MPI_Win_fence(0, win);
+        MPI_Win_create(&p[0*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
+        MPI_Win_fence(0, win);
+        MPI_Put(&p[(ny_split-2)*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
+        MPI_Win_fence(0, win);
         // send p to rank - 1 (including rank = 0 and -1)
         send_to = (rank - 1 + size) % size;
-        //MPI_Win_create(&p[ny_split-1*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
-        //MPI_Win_fence(0, win);
-        //MPI_Put(&p[1], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
-        //MPI_Win_fence(0, win);
+        MPI_Win_create(&p[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
+        MPI_Win_fence(0, win);
+        MPI_Put(&p[1*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win);
+        MPI_Win_fence(0, win);
         if (rank == 0){ // fix values for rank = 0
             for (int i = 0; i < nx; i++) p[0*nx + i] = p[1*nx + i];
         } else if (rank == size-1){ // fix values for rank = -1
