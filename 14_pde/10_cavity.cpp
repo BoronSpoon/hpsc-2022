@@ -33,8 +33,9 @@ double nu = 0.02;
 
 // split j for MPI
 // split j = 1 ~ ny-2 into size
-displacements[0] = 0;
 for (int i = 1; i < size; i++) {
+    ny_splits[i] = 0;
+    displacements[i] = 0;
     if (i != size-1) {
         ny_splits[i] = double(ny-2)/double(size); // nysplit for rank =/= size-1
     } else {
