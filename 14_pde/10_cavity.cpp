@@ -23,7 +23,6 @@ int nt = 5; // debug
 int nit = 50;
 int send_to = 0;
 int ny_split = 0;
-int ny_split0 = 0;
 int ny_splits[size];
 int displacements[size];
 double dx = 2 / (double(nx) - 1);
@@ -167,9 +166,15 @@ for (int n = 0; n < nt; n++) {
             v[(ny_split-1)*nx + i] = 0;
         }
     }
-    MPI_Gatherv(&u, ny_split*nx, MPI_DOUBLE, &u0, ny_split*nx, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gatherv(&v, ny_split*nx, MPI_DOUBLE, &v0, ny_split*nx, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Gatherv(&p, ny_split*nx, MPI_DOUBLE, &p0, ny_split*nx, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    if (rank == 0) {
+        MPI_Gather(&u, ny_split*nx, MPI_DOUBLE, &u0, ny_split*nx, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&v, ny_split*nx, MPI_DOUBLE, &v0, ny_split*nx, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gather(&p, ny_split*nx, MPI_DOUBLE, &p0, ny_split*nx, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Gatherv(&u, ny_split*nx, MPI_DOUBLE, &u0, ny_splits, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gatherv(&v, ny_split*nx, MPI_DOUBLE, &v0, ny_splits, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Gatherv(&p, ny_split*nx, MPI_DOUBLE, &p0, ny_splits, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    }
     if (rank == 0) {
         double mean_u = 0;
         double mean_v = 0;
