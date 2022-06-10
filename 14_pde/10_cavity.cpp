@@ -38,7 +38,7 @@ for (int i = 0; i < size; i++) {
     ny_splits[i] = 0;
     displacements[i] = 0;
     if (i == size-1) {
-        ny_splits[i] = (ny-2) - double(size-1)*ny_splits[0];
+        ny_splits[i] = (ny-2) - (size-1)*int(double(ny-2)/double(size));
     } else {
         ny_splits[i] = double(ny-2)/double(size);
     }
