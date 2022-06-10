@@ -212,4 +212,5 @@ for (int n = 0; n < nt; n++) {
 //printf("%lf s",time);
 MPI_Win_free(&win);
 MPI_Finalize();
+return 0;
 } // close int main()
