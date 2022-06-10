@@ -17,7 +17,7 @@ nx=ny=41, nt=500, nit=50
 - mpi: 1.01 s (time shown on intel vtune profiler)
     - mpiicpc -O3 10_cavity_mpi.cpp, mpirun -genv VT_LOGFILE_FORMAT=SINGLESTF -trace -n 4 ./a.out 
     - 1.01 s: initial
-    - : combined mpi fence for win2~5 to reduce mpi time
+    - 1.02 s: combined mpi fence for win2~5 to reduce mpi time -> no change
  (module: intel intel-mpi intel-itac)
 ***************************************************************************************************/
 int main(int argc, char** argv) {
@@ -105,21 +105,16 @@ for (int n = 0; n < nt; n++) {
                 ) / (2 * (pow(dx, 2) + pow(dy, 2)));
             }
         }
-        // send p to rank + 1 (including rank = 0 and -1)
-        send_to = (rank + 1) % size;
+        
         if (n == 0 && it == 0) {
             MPI_Win_create(&p[0*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win0);
-        }
-        MPI_Win_fence(0, win0);
-        MPI_Put(&p[(ny_split-2)*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win0);
-        MPI_Win_fence(0, win0);
-        // send p to rank - 1 (including rank = 0 and -1)
-        send_to = (rank - 1 + size) % size;
-        if (n == 0 && it == 0) {
             MPI_Win_create(&p[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win1);
         }
+        MPI_Win_fence(0, win0);
         MPI_Win_fence(0, win1);
-        MPI_Put(&p[1*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win1);
+        MPI_Put(&p[(ny_split-2)*nx], nx, MPI_DOUBLE, (rank + 1) % size, 0, nx, MPI_DOUBLE, win0); // send p to rank + 1 (including rank = 0 and -1)
+        MPI_Put(&p[1*nx], nx, MPI_DOUBLE, (rank - 1 + size) % size, 0, nx, MPI_DOUBLE, win1); // send p to rank - 1 (including rank = 0 and -1)
+        MPI_Win_fence(0, win0);
         MPI_Win_fence(0, win1);
         for (int j = 0; j < ny_split; j++) {
             p[j*nx + nx-1] = p[j*nx + nx-2];
