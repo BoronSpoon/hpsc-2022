@@ -21,7 +21,8 @@ int nit = 50;
 int send_to = 0;
 int ny_split = 0;
 int ny_split0 = 0;
-int displacement = 0;
+int ny_splits[size];
+int displacements[size];
 double dx = 2 / (double(nx) - 1);
 double dy = 2 / (double(ny) - 1);
 double dt = 0.01;
@@ -33,17 +34,21 @@ MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 // split j for MPI
 // split j = 1 ~ ny-2 into size
-if (rank == size-1) {
-    ny_split0 = double(ny-2)/double(size); // nysplit for rank =/= size-1
-    ny_split = (ny-2) - (size-1)*ny_split0;
-    ny_split = ny_split + 2; // include before and after elements
-} else {
-    ny_split = double(ny-2)/double(size);
-    ny_split = ny_split + 2; // include before and after elements
+displacements[0] = 0;
+for (int i = 1; i < size; i++) 
+    if (i != size-1) {
+        ny_splits[i] = double(ny-2)/double(size); // nysplit for rank =/= size-1
+    } else {
+        ny_splits[i] = (ny-2) - (size-1)*ny_split0;
+    }
+    ny_splits[i] = ny_splits[i] + 2; // include before and after elements
+    if (i == 0) { 
+        displacements[0] = 0;
+    } else {
+        displacements[i] = displacements[i-1] + ny_split[i-1];
+    }
 }
-for (int i = 1; i < rank; i++) {
-    displacement += ny_split;
-}
+ny_split = ny_splits[rank];
 // np.zeros() default dtype float64 = double (in c)
 // vector defaults to zero
 // store split data
@@ -56,7 +61,7 @@ vector<double> u0(ny*nx);
 vector<double> v0(ny*nx);
 vector<double> p0(ny*nx);
 vector<double> b0(ny*nx);
-printf("rank: %d,ny_split:%d\n", rank, ny_split); // debug
+printf("rank: %d,ny_split:%d,displacement:%d\n", rank, ny_split, displacements[rank]); // debug
 MPI_Win win;
 for (int n = 0; n < nt; n++) {
     for (int j = 1; j < ny_split-1; j++) {
