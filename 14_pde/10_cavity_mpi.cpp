@@ -7,14 +7,14 @@
 using namespace std;
 /************** Benchmark on q_core (4 cores) ****************
 nx=ny=41, nt=500, nit=50
-- python: 137 s
-    - python 10_cavity_python.py
+- python: 137 s 
+    - python 10_cavity_python.py (module: python)
 - normal c++: 3.77 s
-    - g++ 10_cavity.cpp; ./a.out
+    - g++ 10_cavity.cpp; ./a.out (module: gcc)
 - openmp: 1.61 s
-    - g++ 10_cavity_openmp.cpp -fopenmp; ./a.out
-- mpi: ? s
-    - mpicxx 10_cavity_mpi.cpp, mpirun -np 4 ./a.out
+    - g++ 10_cavity_openmp.cpp -fopenmp; ./a.out (module: gcc)
+- mpi: 1.49 s
+    - mpicxx 10_cavity_mpi.cpp, mpirun -np 4 ./a.out (module: gcc cuda openmpi)
 *************************************************************/
 int main(int argc, char** argv) {
 MPI_Init(&argc, &argv);
