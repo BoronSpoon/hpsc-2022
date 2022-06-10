@@ -63,10 +63,6 @@ for n in range(nt):
     v[-1, :] = 0
     v[:, 0]  = 0
     v[:, -1] = 0
-    print(f"N={n}, u={u[1,:5]}")
-    print(f"N={n}, v={v[1,:5]}")
-    print(f"N={n}, p={p[1,:5]}")
-    print(f"N={n}, b={b[1,:5]}")
     #print(f"n: {n}")
     #print(f"u: mean:{np.mean(u):.6f}, std:{np.std(u):.6f}")
     #print(f"v: mean:{np.mean(v):.6f}, std:{np.std(v):.6f}")
