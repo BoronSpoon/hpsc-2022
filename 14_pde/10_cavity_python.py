@@ -23,6 +23,7 @@ b = np.zeros((ny, nx))
 X, Y = np.meshgrid(x, y)
 
 for n in range(nt):
+    """
     for j in range(1, ny-1):
         for i in range(1, nx-1):
             b[j, i] = rho * (1 / dt *\
@@ -41,6 +42,7 @@ for n in range(nt):
         p[0, :] = p[1, :]
         p[:, 0] = p[:, 1]
         p[-1, :] = 0
+    """
     un = u.copy()
     vn = v.copy()
     for j in range(1, ny-1):
