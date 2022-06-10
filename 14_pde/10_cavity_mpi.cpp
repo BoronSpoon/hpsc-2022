@@ -7,13 +7,13 @@
 using namespace std;
 /************** Benchmark on q_core (4 cores) ****************
 nx=ny=41, nt=500, nit=50
-- python: 1.35 s
+- python: 137 s
     - python 10_cavity_python.py
 - normal c++: 3.77 s
     - g++ 10_cavity_openmp.cpp -fopenmp
 - openmp: 1.61 s
     - g++ 10_cavity_openmp.cpp -fopenmp
-- mpi (-np 4): ? s
+- mpi: ? s
     - mpicxx 10_cavity_mpi.cpp, mpirun -np 4 ./a.out
 *************************************************************/
 int main(int argc, char** argv) {
