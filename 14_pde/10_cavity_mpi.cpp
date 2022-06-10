@@ -46,13 +46,12 @@ for (int i = 0; i < size; i++) {
     ny_splits[i] = 0;
     displacements[i] = 0;
     if (i == size-1) {
-        ny_splits[i] = (ny-2) - (size-1)*int(double(ny-2)/double(size));
+        ny_splits[i] = (ny-2) - (size-1)*int(double(ny-2)/double(size)) + 2; // include before and after elements
         counts[i] = ny_splits[i];
     } else {
-        ny_splits[i] = double(ny-2)/double(size);
+        ny_splits[i] = double(ny-2)/double(size) + 2; // include before and after elements
         counts[i] = ny_splits[i] - 2; // the last two elements are overlapping with adjacent ranks
     }
-    ny_splits[i] += 2; // include before and after elements
     if (i == 0) { 
         displacements[i] = 0;
     } else {
