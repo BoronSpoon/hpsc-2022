@@ -10,10 +10,9 @@ using namespace std;
 nx=ny=41, nt=500, nit=50
 - python:
     - python 10_cavity_python.py
-- normal c++:
-    - gcc 10_cavity_openmp.cpp; ./a.out
+- normal c++: 
 - openmp: 
-    - gcc 10_cavity_openmp.cpp -fopenmp; ./a.out
+    - gcc 10_cavity_openmp.cpp -fopenmp
 - mpi (-np 4): 0.19 s
     - mpicxx 10_cavity_mpi.cpp, mpirun -np 4 ./a.out
 *************************************************************/
