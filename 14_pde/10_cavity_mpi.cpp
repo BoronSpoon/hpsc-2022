@@ -14,10 +14,10 @@ nx=ny=41, nt=500, nit=50
     - g++ 10_cavity.cpp; ./a.out (module: gcc)
 - openmp: 1.61 s
     - g++ 10_cavity_openmp.cpp -fopenmp; ./a.out (module: gcc)
-- mpi: 
+- mpi: 1.01 s (time shown on intel vtune profiler)
     - mpiicpc -O3 10_cavity_mpi.cpp, mpirun -genv VT_LOGFILE_FORMAT=SINGLESTF -trace -n 4 ./a.out 
     - 1.01 s: initial
-    - 
+    - : combined mpi fence for win2~5 to reduce mpi time
  (module: intel intel-mpi intel-itac)
 ***************************************************************************************************/
 int main(int argc, char** argv) {
@@ -150,37 +150,23 @@ for (int n = 0; n < nt; n++) {
                 + nu * dt / pow(dy, 2) * (vn[(j+1)*nx + i] - 2 * vn[j*nx + i] + vn[(j-1)*nx + i]);
         }
     }
-    // send u to rank + 1 (including rank = 0 and -1)
-    send_to = (rank + 1) % size;
     if (n == 0) {
         MPI_Win_create(&u[0*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win2);
-    }
-    MPI_Win_fence(0, win2);
-    MPI_Put(&u[(ny_split-2)*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win2);
-    MPI_Win_fence(0, win2);
-    // send u to rank - 1 (including rank = 0 and -1)
-    send_to = (rank - 1 + size) % size;
-    if (n == 0) {
         MPI_Win_create(&u[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win3);
-    }
-    MPI_Win_fence(0, win3);
-    MPI_Put(&u[1*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win3);
-    MPI_Win_fence(0, win3);
-    // send v to rank + 1 (including rank = 0 and -1)
-    send_to = (rank + 1) % size;
-    if (n == 0) {
         MPI_Win_create(&v[0*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win4);
-    }
-    MPI_Win_fence(0, win4);
-    MPI_Put(&v[(ny_split-2)*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win4);
-    MPI_Win_fence(0, win4);
-    // send v to rank - 1 (including rank = 0 and -1)
-    send_to = (rank - 1 + size) % size;
-    if (n == 0) {
         MPI_Win_create(&v[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win5);
     }
+    MPI_Win_fence(0, win2);
+    MPI_Win_fence(0, win3);
+    MPI_Win_fence(0, win4);
     MPI_Win_fence(0, win5);
-    MPI_Put(&v[1*nx], nx, MPI_DOUBLE, send_to, 0, nx, MPI_DOUBLE, win5);
+    MPI_Put(&u[(ny_split-2)*nx], nx, MPI_DOUBLE, (rank + 1) % size, 0, nx, MPI_DOUBLE, win2); // send u to rank + 1 (including rank = 0 and -1)
+    MPI_Put(&u[1*nx], nx, MPI_DOUBLE, (rank - 1 + size) % size, 0, nx, MPI_DOUBLE, win3); // send u to rank - 1 (including rank = 0 and -1)
+    MPI_Put(&v[(ny_split-2)*nx], nx, MPI_DOUBLE, (rank + 1) % size, 0, nx, MPI_DOUBLE, win4);  // send v to rank + 1 (including rank = 0 and -1)
+    MPI_Put(&v[1*nx], nx, MPI_DOUBLE, (rank - 1 + size) % size, 0, nx, MPI_DOUBLE, win5); // send v to rank - 1 (including rank = 0 and -1)
+    MPI_Win_fence(0, win2);
+    MPI_Win_fence(0, win3);
+    MPI_Win_fence(0, win4);
     MPI_Win_fence(0, win5);
     for (int j = 0; j < ny_split; j++) {
         u[j*nx + 0]    = 0;
@@ -203,7 +189,7 @@ for (int n = 0; n < nt; n++) {
     MPI_Gatherv(&v[0], count, MPI_DOUBLE, &v0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&p[0], count, MPI_DOUBLE, &p0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Gatherv(&b[0], count, MPI_DOUBLE, &b0[0], counts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);/*
-    if (rank == 0) {
+    if (rank == 0) { // calculate and compare mean & std of u,v,p,b to check that the answer is correct
         double mean_u = 0;
         double mean_v = 0;
         double mean_p = 0;
