@@ -27,7 +27,7 @@ matrix p(ny,vector<double>(nx));
 matrix b(ny,vector<double>(nx));
 
 for (int n = 0; n < nt; n++) {
-#pragma omp parallel for
+#pragma omp parallel for collapse(2)
     for (int j = 1; j < ny-1; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
             b[j][i] = rho * (
@@ -40,7 +40,7 @@ for (int n = 0; n < nt; n++) {
     }
     for (int it = 0; it < nit; it++) {  
         matrix pn = p; // deepcopy
-#pragma omp parallel for
+#pragma omp parallel for collapse(2)
         for (int j = 1; j < ny-1; j++) {
             for (int i = 1; i < nx-1; i++) { // loop order is already optimal
                 p[j][i] = (
@@ -50,12 +50,12 @@ for (int n = 0; n < nt; n++) {
                 ) / (2 * (pow(dx, 2) + pow(dy, 2)));
             }
         }
-#pragma omp parallel for
+#pragma omp parallel for collapse(2)
         for (int j = 0; j < ny; j++) {
             p[j][nx-1] = p[j][nx-2];
             p[j][0] = p[j][1];
         }
-#pragma omp parallel for
+#pragma omp parallel for collapse(2)
         for (int i = 0; i < nx; i++) {
             p[0][i] = p[1][i];
             p[ny-1][i] = 0;
@@ -64,7 +64,7 @@ for (int n = 0; n < nt; n++) {
     // deepcopy
     matrix un = u;
     matrix vn = v;
-#pragma omp parallel for
+#pragma omp parallel for collapse(2)
     for (int j = 1; j < ny-1; j++) {
         for (int i = 1; i < nx-1; i++) { // loop order is already optimal
             u[j][i] = un[j][i] 
@@ -81,14 +81,14 @@ for (int n = 0; n < nt; n++) {
                 + nu * dt / pow(dy, 2) * (vn[j+1][i] - 2 * vn[j][i] + vn[j-1][i]);
         }
     }
-#pragma omp parallel for
+#pragma omp parallel for collapse(2)
     for (int j = 0; j < ny; j++) {
         u[j][0]    = 0;
         u[j][nx-1] = 0;
         v[j][0]    = 0;
         v[j][nx-1] = 0;
     }
-#pragma omp parallel for
+#pragma omp parallel for collapse(2)
     for (int i = 0; i < nx; i++) {
         u[0][i]    = 0;
         u[ny-1][i] = 1;
