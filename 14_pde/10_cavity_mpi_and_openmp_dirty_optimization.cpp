@@ -6,7 +6,7 @@
 #include <mpi.h>
 #include <time.h>
 using namespace std;
-/************************************ Benchmark on q_core (4 cores) *******************************
+/**************************************** Benchmark on q_core (4 cores) **************************************
 nx=ny=41, nt=500, nit=50
 - python: 137 s 
     - python 10_cavity_python.py (module: python)
@@ -14,18 +14,19 @@ nx=ny=41, nt=500, nit=50
     - g++ 10_cavity.cpp; ./a.out (module: gcc)
 - openmp: 1.61 s
     - g++ 10_cavity_openmp.cpp -fopenmp; ./a.out (module: gcc)
-- mpi: 1.01 s (time shown on intel vtune profiler)
+- mpi: 1.08 s (time shown on intel vtune profiler)
     - mpiicpc -O3 10_cavity_mpi.cpp; mpirun -genv VT_LOGFILE_FORMAT=SINGLESTF -trace -n 4 ./a.out 
-    - 1.01 s: initial
-    - 1.08 s: even out the elements in each nodes
- (module: intel intel-mpi intel-itac)
-***************************************************************************************************/
+        - (module: intel intel-mpi intel-itac)
+- mpi & openmp: 2.28 s (probably because qnode only has 4 nodes)
+    - mpiicpc -O3 -fopenmp 10_cavity_mpi_and_openmp.cpp; mpirun -genv VT_LOGFILE_FORMAT=SINGLESTF -trace -n 4 ./a.out 
+        - (module: intel intel-mpi intel-itac)
+************************************************************************************************************/
 int main(int argc, char** argv) {
     struct timespec tic, toc; // for execution time measurement
     double time = 0; // for execution time measurement
     clock_gettime(CLOCK_REALTIME, &tic);
     MPI_Init(&argc, &argv);
-    MPI_Win win0, win1, win2, win3, win4, win5;
+    MPI_Win win0, win1;
     int size, rank;
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -94,8 +95,12 @@ int main(int argc, char** argv) {
     vector<double> v0(ny*nx);
     vector<double> p0(ny*nx);
     vector<double> b0(ny*nx);
+
+    vector<double> win0_vec(2*nx);
+    vector<double> win1_vec(4*nx);
     printf("rank: %d, ny_split:%d, count:%d, displacement:%d\n", rank, ny_split, counts[rank], displacements[rank]); // debug
     for (int n = 0; n < nt; n++) {
+#pragma omp parallel for collapse(2)
         for (int j = 1; j < ny_split-1; j++) {
             for (int i = 1; i < nx-1; i++) {
                 b[j*nx + i] = rho * (
@@ -108,6 +113,7 @@ int main(int argc, char** argv) {
         }
         for (int it = 0; it < nit; it++) {
             vector<double> pn = p; // deepcopy
+#pragma omp parallel for collapse(2)
             for (int j = 1; j < ny_split-1; j++) {
                 for (int i = 1; i < nx-1; i++) {
                     p[j*nx + i] = (
@@ -117,34 +123,39 @@ int main(int argc, char** argv) {
                     ) / (2 * (pow(dx, 2) + pow(dy, 2)));
                 }
             }
-            
             if (n == 0 && it == 0) {
-                MPI_Win_create(&p[0*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win0);
-                MPI_Win_create(&p[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win1);
+                MPI_Win_create(&win0_vec[0], 2*nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win0);
             }
             MPI_Win_fence(0, win0);
             // rank=0: [0,1,...,10,11                              ], ny_split = 10+2
             // rank=1: [        10,11,...,20,21                    ], ny_split = 10+2
             // ex) for rank 0, send element 10 to rank 1, because element 10 is used but not calculatable in rank 1
-            MPI_Put(&p[(ny_split-2)*nx], nx, MPI_DOUBLE, (rank + 1) % size, 0, nx, MPI_DOUBLE, win0); // send p to rank + 1 (including rank = 0 and -1)
-            MPI_Win_fence(0, win0);
-            MPI_Win_fence(0, win1);
             // ex) for rank 1, send element 11 to rank 0, because element 11 is used but not calculatable in rank 0
-            MPI_Put(&p[1*nx], nx, MPI_DOUBLE, (rank - 1 + size) % size, 0, nx, MPI_DOUBLE, win1); // send p to rank - 1 (including rank = 0 and -1)
-            MPI_Win_fence(0, win1);
+            MPI_Put(&p[(ny_split-2)*nx], nx, MPI_DOUBLE, (rank + 1) % size, nx, nx, MPI_DOUBLE, win0); // send p to rank + 1 (including rank = 0 and -1)
+            MPI_Put(&p[1*nx], nx, MPI_DOUBLE, (rank - 1 + size) % size, 0, nx, MPI_DOUBLE, win0); // send p to rank - 1 (including rank = 0 and -1)
+            MPI_Win_fence(0, win0);
+#pragma omp parallel for
+            for (int i = 0; i < nx; i++) {
+                p[0*nx + i]            = win0_vec[i]; 
+                p[(ny_split-1)*nx + i] = win0_vec[i+nx];
+            }
+#pragma omp parallel for
             for (int j = 0; j < ny_split; j++) {
                 p[j*nx + nx-1] = p[j*nx + nx-2];
                 p[j*nx + 0] = p[j*nx + 1];
             }
             if (rank == 0){ // fix the MPI_PUT values for j = 0 (rank = 0)
+#pragma omp parallel for
                 for (int i = 0; i < nx; i++) p[0*nx + i] = p[1*nx + i];
             } else if (rank == size-1){ // // fix the MPI_PUT values for j = -1 (rank = size-1)
+#pragma omp parallel for
                 for (int i = 0; i < nx; i++) p[(ny_split-1)*nx + i] = 0;
             }
         }
         // deepcopy
         vector<double> un = u;
         vector<double> vn = v;
+#pragma omp parallel for collapse(2)
         for (int j = 1; j < ny_split-1; j++) {
             for (int i = 1; i < nx-1; i++) {
                 u[j*nx + i] = un[j*nx + i] 
@@ -162,23 +173,22 @@ int main(int argc, char** argv) {
             }
         }
         if (n == 0) {
-            MPI_Win_create(&u[0*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win2);
-            MPI_Win_create(&u[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win3);
-            MPI_Win_create(&v[0*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win4);
-            MPI_Win_create(&v[(ny_split-1)*nx], nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win5);
+            MPI_Win_create(&win1_vec[0], 4*nx*sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &win1);
         }
-        MPI_Win_fence(0, win2);
+        MPI_Win_fence(0, win1);
         MPI_Put(&u[(ny_split-2)*nx], nx, MPI_DOUBLE, (rank + 1) % size, 0, nx, MPI_DOUBLE, win2); // send u to rank + 1 (including rank = 0 and -1)
-        MPI_Win_fence(0, win2);
-        MPI_Win_fence(0, win3);
-        MPI_Put(&u[1*nx], nx, MPI_DOUBLE, (rank - 1 + size) % size, 0, nx, MPI_DOUBLE, win3); // send u to rank - 1 (including rank = 0 and -1)
-        MPI_Win_fence(0, win3);
-        MPI_Win_fence(0, win4);
-        MPI_Put(&v[(ny_split-2)*nx], nx, MPI_DOUBLE, (rank + 1) % size, 0, nx, MPI_DOUBLE, win4);  // send v to rank + 1 (including rank = 0 and -1)
-        MPI_Win_fence(0, win4);
-        MPI_Win_fence(0, win5);
-        MPI_Put(&v[1*nx], nx, MPI_DOUBLE, (rank - 1 + size) % size, 0, nx, MPI_DOUBLE, win5); // send v to rank - 1 (including rank = 0 and -1)
-        MPI_Win_fence(0, win5);
+        MPI_Put(&u[1*nx], nx, MPI_DOUBLE, (rank - 1 + size) % size, nx, nx, MPI_DOUBLE, win3); // send u to rank - 1 (including rank = 0 and -1)
+        MPI_Put(&v[(ny_split-2)*nx], nx, MPI_DOUBLE, (rank + 1) % size, 2*nx, nx, MPI_DOUBLE, win4);  // send v to rank + 1 (including rank = 0 and -1)
+        MPI_Put(&v[1*nx], nx, MPI_DOUBLE, (rank - 1 + size) % size, 3*nx, nx, MPI_DOUBLE, win5); // send v to rank - 1 (including rank = 0 and -1)
+        MPI_Win_fence(0, win1);
+#pragma omp parallel for
+        for (int i = 0; i < nx; i++) {
+            u[0*nx + i]            = winv_vec[i+0*nx]; 
+            u[(ny_split-1)*nx + i] = winv_vec[i+1*nx];
+            v[0*nx + i]            = winv_vec[i+2*nx]; 
+            v[(ny_split-1)*nx + i] = winv_vec[i+3*nx];
+        }
+#pragma omp parallel for
         for (int j = 0; j < ny_split; j++) {
             u[j*nx + 0]    = 0;
             u[j*nx + nx-1] = 0;
@@ -186,11 +196,13 @@ int main(int argc, char** argv) {
             v[j*nx + nx-1] = 0;
         }
         if (rank == 0){
+#pragma omp parallel for
             for (int i = 0; i < nx; i++) {
                 u[0*nx + i] = 0;
                 v[0*nx + i] = 0;
             }
         } else if (rank == size-1){
+#pragma omp parallel for
             for (int i = 0; i < nx; i++) {
                 u[(ny_split-1)*nx + i] = 1;
                 v[(ny_split-1)*nx + i] = 0;
@@ -237,7 +249,7 @@ int main(int argc, char** argv) {
             printf("b: mean:%lf, std:%lf\n", mean_b, std_b);
         }*/
     }
-    MPI_Win_free(&win0); MPI_Win_free(&win1); MPI_Win_free(&win2); MPI_Win_free(&win3); MPI_Win_free(&win4); MPI_Win_free(&win5);
+    MPI_Win_free(&win0); MPI_Win_free(&win1);
     MPI_Finalize();
     clock_gettime(CLOCK_REALTIME, &toc);
     time = (toc.tv_sec - tic.tv_sec) + double(toc.tv_nsec - tic.tv_nsec) / double(1000000000L);
