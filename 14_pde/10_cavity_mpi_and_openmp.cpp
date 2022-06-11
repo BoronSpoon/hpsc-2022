@@ -14,13 +14,11 @@ nx=ny=41, nt=500, nit=50
     - g++ 10_cavity.cpp; ./a.out (module: gcc)
 - openmp: 1.61 s
     - g++ 10_cavity_openmp.cpp -fopenmp; ./a.out (module: gcc)
-- mpi: 1.01 s (time shown on intel vtune profiler)
-    - 1.01 s: initial
-    - 1.08 s: even out the elements in each nodes
+- mpi: 1.08 s (time shown on intel vtune profiler)
     - mpiicpc -O3 10_cavity_mpi.cpp; mpirun -genv VT_LOGFILE_FORMAT=SINGLESTF -trace -n 4 ./a.out 
         - (module: intel intel-mpi intel-itac)
-- mpi & openmp: (time shown on intel vtune profiler)
-    - mpiicpc -O3 -fopenmp 10_cavity_mpi.cpp; mpirun -genv VT_LOGFILE_FORMAT=SINGLESTF -trace -n 4 ./a.out 
+- mpi & openmp: 2.28 s (probably because qnode only has 4 nodes)
+    - mpiicpc -O3 -fopenmp 10_cavity_mpi_and_openmp.cpp; mpirun -genv VT_LOGFILE_FORMAT=SINGLESTF -trace -n 4 ./a.out 
         - (module: intel intel-mpi intel-itac)
 ************************************************************************************************************/
 int main(int argc, char** argv) {
