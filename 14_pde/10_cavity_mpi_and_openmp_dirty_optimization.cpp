@@ -186,10 +186,10 @@ int main(int argc, char** argv) {
         MPI_Win_fence(0, win1);
 #pragma omp parallel for
         for (int i = 0; i < nx; i++) {
-            u[0*nx + i]            = winv_vec[i+0*nx]; 
-            u[(ny_split-1)*nx + i] = winv_vec[i+1*nx];
-            v[0*nx + i]            = winv_vec[i+2*nx]; 
-            v[(ny_split-1)*nx + i] = winv_vec[i+3*nx];
+            u[0*nx + i]            = win1_vec[i+0*nx]; 
+            u[(ny_split-1)*nx + i] = win1_vec[i+1*nx];
+            v[0*nx + i]            = win1_vec[i+2*nx]; 
+            v[(ny_split-1)*nx + i] = win1_vec[i+3*nx];
         }
 #pragma omp parallel for
         for (int j = 0; j < ny_split; j++) {
