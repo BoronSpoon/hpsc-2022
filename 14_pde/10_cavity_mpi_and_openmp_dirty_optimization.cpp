@@ -6,7 +6,7 @@
 #include <mpi.h>
 #include <time.h>
 using namespace std;
-/**************************************** Benchmark on q_core (4 cores) **************************************
+/******************************************************* Benchmark on q_core (4 cores) ******************************************************
 nx=ny=41, nt=500, nit=50
 - python: 137 s 
     - python 10_cavity_python.py (module: python)
@@ -17,13 +17,16 @@ nx=ny=41, nt=500, nit=50
 - mpi: 1.08 s (time shown on intel vtune profiler)
     - mpiicpc -O3 10_cavity_mpi.cpp; mpirun -genv VT_LOGFILE_FORMAT=SINGLESTF -trace -n 4 ./a.out 
         - (module: intel intel-mpi intel-itac)
-- mpi & openmp: 2.28 s (probably because qnode only has 4 nodes)
+- mpi & openmp: 2.28 s (slow because qnode only has 4 nodes. maybe faster on fnode which was not reservable in qrsh)
     - mpiicpc -O3 -fopenmp 10_cavity_mpi_and_openmp.cpp; mpirun -genv VT_LOGFILE_FORMAT=SINGLESTF -trace -n 4 ./a.out 
         - (module: intel intel-mpi intel-itac)
-- mpi & openmp dirty optimization:  s
+* mpi dirty optimization: 0.69 s (fastest)
     - mpiicpc -O3 10_cavity_mpi_and_openmp_dirty_optimization.cpp; mpirun -genv VT_LOGFILE_FORMAT=SINGLESTF -trace -n 4 ./a.out 
         - (module: intel intel-mpi intel-itac)
-************************************************************************************************************/
+- mpi & openmp dirty optimization: 1.40 s (slow because qnode only has 4 nodes. maybe faster on fnode which was not reservable in qrsh)
+    - mpiicpc -O3 -fopenmp 10_cavity_mpi_and_openmp_dirty_optimization.cpp; mpirun -genv VT_LOGFILE_FORMAT=SINGLESTF -trace -n 4 ./a.out 
+        - (module: intel intel-mpi intel-itac)
+********************************************************************************************************************************************/
 int main(int argc, char** argv) {
     struct timespec tic, toc; // for execution time measurement
     double time = 0; // for execution time measurement
